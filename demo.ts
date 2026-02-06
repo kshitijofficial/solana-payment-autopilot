@@ -9,6 +9,7 @@ import { encodeURL, createQR } from '@solana/pay';
 import bs58 from 'bs58';
 import * as fs from 'fs';
 import * as path from 'path';
+import BigNumber from 'bignumber.js';
 
 const DEVNET_RPC = 'https://api.devnet.solana.com';
 const MERCHANT_FILE = 'merchant-wallet.json';
@@ -84,7 +85,7 @@ function generatePaymentQR(merchantAddress: string, amount: number, label: strin
   
   const url = encodeURL({
     recipient: new PublicKey(merchantAddress),
-    amount: amount,
+    amount: new BigNumber(amount),
     label: label,
     message: 'Payment via Solana Payment Autopilot',
   });
