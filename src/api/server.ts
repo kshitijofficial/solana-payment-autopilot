@@ -16,7 +16,7 @@ app.use(express.json());
 
 const connection = new Connection(DEVNET_RPC, 'confirmed');
 const qrGenerator = new QRCodeGenerator();
-const converter = new ConversionEngine(DEVNET_RPC, 'https://quote-api.jup.ag/v6');
+const converter = new ConversionEngine(DEVNET_RPC, process.env.JUPITER_API_URL || 'https://public.jupiterapi.com');
 
 // In-memory payment storage
 let payments: any[] = [];
