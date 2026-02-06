@@ -121,16 +121,19 @@ app.get('/api/payments/check', async (req, res) => {
   }
 });
 
-// Convert SOL to USDC
+// Convert SOL to USDC (mock for devnet)
 app.post('/api/convert', async (req, res) => {
   try {
     const { amount } = req.body;
-    const walletPath = path.join(process.cwd(), 'merchant-wallet.json');
-    const wallet = JSON.parse(fs.readFileSync(walletPath, 'utf-8'));
-    const keypair = Keypair.fromSecretKey(bs58.decode(wallet.privateKey));
+    const sol = parseFloat(amount);
+    const usdcAmount = (sol * 150).toFixed(2); // Mock: 1 SOL = ~$150
     
-    const result = await converter.convertSOLToUSDC(parseFloat(amount), keypair);
-    res.json({ success: true, signature: result.signature, usdcAmount: result.amountOut });
+    res.json({ 
+      success: true, 
+      signature: 'mock-' + Date.now(), 
+      usdcAmount,
+      note: 'Mock conversion (devnet). Jupiter only works on mainnet.'
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
