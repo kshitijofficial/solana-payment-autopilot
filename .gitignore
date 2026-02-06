@@ -50,3 +50,7 @@ temp/
 *.p12
 keystore/
 secrets/
+
+# Generated QR codes
+qr-codes/
+merchant-wallet.json

@@ -5,11 +5,11 @@
  */
 
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { encodeURL, createQR } from '@solana/pay';
+import QRCode from 'qrcode';
 import bs58 from 'bs58';
 import * as fs from 'fs';
 import * as path from 'path';
-import BigNumber from 'bignumber.js';
+import { QRCodeGenerator } from './src/modules/QRCodeGenerator';
 
 const DEVNET_RPC = 'https://api.devnet.solana.com';
 const MERCHANT_FILE = 'merchant-wallet.json';
@@ -80,25 +80,32 @@ async function getBalance(connection: Connection, publicKey: PublicKey): Promise
   return balance / LAMPORTS_PER_SOL;
 }
 
-function generatePaymentQR(merchantAddress: string, amount: number, label: string) {
+async function generatePaymentQR(merchantAddress: string, amount: number, label: string) {
   log('\n📱 Generating Solana Pay QR Code...', colors.bright);
   
-  const url = encodeURL({
-    recipient: new PublicKey(merchantAddress),
-    amount: new BigNumber(amount),
+  const qrGenerator = new QRCodeGenerator();
+  
+  // Generate QR code
+  const result = await qrGenerator.generatePaymentQR({
+    recipient: merchantAddress,
+    amount: amount,
     label: label,
     message: 'Payment via Solana Payment Autopilot',
   });
 
-  log(`✓ Payment URL: ${url}`, colors.cyan);
-  log(`✓ Amount: ${amount} SOL`, colors.cyan);
-  log(`✓ Label: ${label}`, colors.cyan);
+  log(`✓ Amount: ${amount} SOL`, colors.green);
+  log(`✓ Label: ${label}`, colors.green);
+  log(`✓ QR Code saved to: ${result.qrCodeFilePath}`, colors.green);
   
-  // QR code can be generated for display
-  log('\n📋 To pay, use this URL in a Solana wallet:', colors.bright);
-  log(`   ${url}`, colors.blue);
+  // Display QR in terminal
+  log('\n📱 Scan this QR code with your Solana wallet:', colors.bright);
+  const qrTerminal = await QRCode.toString(result.url, { type: 'terminal', small: true });
+  console.log(qrTerminal);
   
-  return url;
+  log('\n📋 Or use this URL:', colors.bright);
+  log(`   ${result.url}`, colors.blue);
+  
+  return result;
 }
 
 async function monitorPayments(connection: Connection, merchantAddress: PublicKey) {
@@ -190,7 +197,7 @@ async function main() {
   // Generate payment QR
   const paymentAmount = 0.1; // 0.1 SOL
   const paymentLabel = 'Coffee Shop - Latte';
-  generatePaymentQR(wallet.publicKey, paymentAmount, paymentLabel);
+  await generatePaymentQR(wallet.publicKey, paymentAmount, paymentLabel);
 
   // Start monitoring
   await monitorPayments(connection, merchantPubKey);

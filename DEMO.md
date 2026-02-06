@@ -31,7 +31,7 @@ npm run demo
 
 1. **Creates a merchant wallet** (saved to `merchant-wallet.json`)
 2. **Requests 2 SOL airdrop** from devnet faucet
-3. **Generates Solana Pay URL** for payment
+3. **Generates Solana Pay QR Code** (displayed in terminal + saved as PNG)
 4. **Monitors for incoming payments** in real-time
 
 ---
@@ -85,9 +85,20 @@ Copy this URL and open it in a Solana wallet app that supports Solana Pay.
 💰 Current balance: 2.0000 SOL
 
 📱 Generating Solana Pay QR Code...
-✓ Payment URL: solana:FvZ8...?amount=0.1&label=Coffee
 ✓ Amount: 0.1 SOL
 ✓ Label: Coffee Shop - Latte
+✓ QR Code saved to: qr-codes/payment-1234567890.png
+
+📱 Scan this QR code with your Solana wallet:
+█████████████████████████████
+█████████████████████████████
+███ ▄▄▄▄▄ █▀█ █▄██ ▄▄▄▄▄ ███
+███ █   █ █▀▀▀█ ▀█ █   █ ███
+███ █▄▄▄█ █▀ █▀▀ █ █▄▄▄█ ███
+[QR code displayed here]
+
+📋 Or use this URL:
+   solana:FvZ8...?amount=0.1&label=Coffee
 
 👀 Monitoring for payments...
    Send SOL to this address from any devnet wallet
