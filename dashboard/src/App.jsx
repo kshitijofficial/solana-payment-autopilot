@@ -7,18 +7,49 @@ export default function App() {
   const [stats, setStats] = useState({ total: 0, today: 0, balance: 0 });
 
   useEffect(() => {
-    // Load merchant wallet
-    fetch('/api/merchant/wallet')
-      .then(r => r.json())
-      .then(setWallet)
-      .catch(() => {});
+    const API = 'http://localhost:3000';
     
-    // Load payments
-    fetch('/api/payments')
+    fetch(`${API}/api/merchant/wallet`)
       .then(r => r.json())
-      .then(setPayments)
-      .catch(() => {});
+      .then(data => {
+        setWallet(data);
+        setStats(s => ({ ...s, balance: data.balance }));
+      });
+    
+    fetch(`${API}/api/payments`)
+      .then(r => r.json())
+      .then(setPayments);
+
+    // Poll for new payments every 5s
+    const interval = setInterval(() => {
+      fetch(`${API}/api/payments/check`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.newPayments?.length > 0) {
+            setPayments(p => [...data.newPayments, ...p]);
+            fetch(`${API}/api/merchant/wallet`)
+              .then(r => r.json())
+              .then(data => setStats(s => ({ ...s, balance: data.balance })));
+          }
+        });
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const generateQR = () => {
+    const amount = document.querySelector('input[type="number"]').value;
+    fetch('http://localhost:3000/api/qr/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, label: 'Payment' })
+    })
+    .then(r => r.json())
+    .then(data => {
+      window.open(data.qrCodeFilePath);
+      alert('QR Code generated! Check qr-codes/ folder');
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,7 +84,7 @@ export default function App() {
           </h2>
           <div className="flex gap-4">
             <input type="number" placeholder="Amount (SOL)" className="border rounded px-4 py-2" defaultValue="0.1" />
-            <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            <button onClick={generateQR} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
               Generate QR
             </button>
           </div>
