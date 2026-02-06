@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import * as fs from 'fs';
 import path from 'path';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair } from '@solana/web3.js';
+import bs58 from 'bs58';
 import { QRCodeGenerator } from '../modules/QRCodeGenerator';
+import { ConversionEngine } from '../modules/ConversionEngine';
 
 const app = express();
 const PORT = 3000;
@@ -14,6 +16,7 @@ app.use(express.json());
 
 const connection = new Connection(DEVNET_RPC, 'confirmed');
 const qrGenerator = new QRCodeGenerator();
+const converter = new ConversionEngine(DEVNET_RPC, 'https://quote-api.jup.ag/v6');
 
 // In-memory payment storage
 let payments: any[] = [];
@@ -113,6 +116,21 @@ app.get('/api/payments/check', async (req, res) => {
     }
     
     res.json({ newPayments });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Convert SOL to USDC
+app.post('/api/convert', async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const walletPath = path.join(process.cwd(), 'merchant-wallet.json');
+    const wallet = JSON.parse(fs.readFileSync(walletPath, 'utf-8'));
+    const keypair = Keypair.fromSecretKey(bs58.decode(wallet.privateKey));
+    
+    const result = await converter.convertSOLToUSDC(parseFloat(amount), keypair);
+    res.json({ success: true, signature: result.signature, usdcAmount: result.amountOut });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -35,6 +35,16 @@ export default function App() {
     }).then(r => r.json()).then(() => alert('QR saved to qr-codes/'));
   };
 
+  const convertToUSDC = () => {
+    const amt = prompt('Amount of SOL to convert:');
+    if (!amt) return;
+    fetch(`${API}/api/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amt })
+    }).then(r => r.json()).then(d => alert(`Converted to ${d.usdcAmount} USDC`)).catch(e => alert('Conversion failed'));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
@@ -53,9 +63,12 @@ export default function App() {
         {wallet && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-lg font-semibold mb-4">Merchant Wallet</h2>
-            <div className="font-mono text-sm bg-gray-100 p-3 rounded break-all">
+            <div className="font-mono text-sm bg-gray-100 p-3 rounded break-all mb-4">
               {wallet.publicKey}
             </div>
+            <button onClick={convertToUSDC} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              Convert SOL → USDC
+            </button>
           </div>
         )}
 
