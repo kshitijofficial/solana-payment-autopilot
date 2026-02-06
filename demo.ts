@@ -108,9 +108,15 @@ async function monitorPayments(connection: Connection, merchantAddress: PublicKe
   log('   Press Ctrl+C to stop\n', colors.yellow);
 
   let lastSignature: string | null = null;
+  let checkCount = 0;
 
   // Poll for new transactions
   setInterval(async () => {
+    checkCount++;
+    if (checkCount % 12 === 0) {
+      // Heartbeat every minute (12 checks * 5 sec)
+      process.stdout.write(`💓 Still monitoring... (${Math.floor(checkCount * 5 / 60)} min)\r`);
+    }
     try {
       const signatures = await connection.getSignaturesForAddress(merchantAddress, { limit: 1 });
       
@@ -142,7 +148,9 @@ async function monitorPayments(connection: Connection, merchantAddress: PublicKe
               log(`\n💱 Auto-conversion would happen here (Jupiter SOL → USDC)`, colors.yellow);
               
               const balance = await getBalance(connection, merchantAddress);
-              log(`   New balance: ${balance.toFixed(4)} SOL\n`, colors.cyan);
+              log(`   New balance: ${balance.toFixed(4)} SOL`, colors.cyan);
+              log(`\n✓ Payment processed! Still monitoring for more payments...`, colors.green);
+              log(`   (Press Ctrl+C to exit)\n`, colors.yellow);
             }
           }
         }
