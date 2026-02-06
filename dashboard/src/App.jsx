@@ -1,54 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, QrCode, TrendingUp, DollarSign } from 'lucide-react';
 
+const API = 'http://localhost:3000';
+
 export default function App() {
   const [wallet, setWallet] = useState(null);
   const [payments, setPayments] = useState([]);
-  const [stats, setStats] = useState({ total: 0, today: 0, balance: 0 });
+  const [stats, setStats] = useState({ balance: '0' });
+  const [amount, setAmount] = useState('0.1');
 
   useEffect(() => {
-    const API = 'http://localhost:3000';
+    fetch(`${API}/api/merchant/wallet`).then(r => r.json()).then(d => {
+      setWallet(d);
+      setStats({ balance: d.balance });
+    });
+    fetch(`${API}/api/payments`).then(r => r.json()).then(setPayments);
     
-    fetch(`${API}/api/merchant/wallet`)
-      .then(r => r.json())
-      .then(data => {
-        setWallet(data);
-        setStats(s => ({ ...s, balance: data.balance }));
+    const poll = setInterval(() => {
+      fetch(`${API}/api/payments/check`).then(r => r.json()).then(d => {
+        if (d.newPayments?.length) {
+          setPayments(p => [...d.newPayments, ...p]);
+          fetch(`${API}/api/merchant/wallet`).then(r => r.json()).then(w => setStats({ balance: w.balance }));
+        }
       });
-    
-    fetch(`${API}/api/payments`)
-      .then(r => r.json())
-      .then(setPayments);
-
-    // Poll for new payments every 5s
-    const interval = setInterval(() => {
-      fetch(`${API}/api/payments/check`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.newPayments?.length > 0) {
-            setPayments(p => [...data.newPayments, ...p]);
-            fetch(`${API}/api/merchant/wallet`)
-              .then(r => r.json())
-              .then(data => setStats(s => ({ ...s, balance: data.balance })));
-          }
-        });
     }, 5000);
-
-    return () => clearInterval(interval);
+    return () => clearInterval(poll);
   }, []);
 
   const generateQR = () => {
-    const amount = document.querySelector('input[type="number"]').value;
-    fetch('http://localhost:3000/api/qr/generate', {
+    fetch(`${API}/api/qr/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, label: 'Payment' })
-    })
-    .then(r => r.json())
-    .then(data => {
-      window.open(data.qrCodeFilePath);
-      alert('QR Code generated! Check qr-codes/ folder');
-    });
+      body: JSON.stringify({ amount })
+    }).then(r => r.json()).then(() => alert('QR saved to qr-codes/'));
   };
 
   return (
@@ -60,41 +44,43 @@ export default function App() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatsCard icon={<DollarSign />} title="Total Volume" value="$0.00" />
-          <StatsCard icon={<TrendingUp />} title="Today" value="0 payments" />
+          <StatsCard icon={<DollarSign />} title="Total Volume" value={`${payments.length} payments`} />
+          <StatsCard icon={<TrendingUp />} title="Recent" value={payments[0]?.amount || '0'} />
           <StatsCard icon={<Wallet />} title="Balance" value={`${stats.balance} SOL`} />
         </div>
 
-        {/* Wallet Info */}
         {wallet && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-lg font-semibold mb-4">Merchant Wallet</h2>
-            <div className="font-mono text-sm bg-gray-100 p-3 rounded">
+            <div className="font-mono text-sm bg-gray-100 p-3 rounded break-all">
               {wallet.publicKey}
             </div>
           </div>
         )}
 
-        {/* QR Code */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <QrCode size={20} /> Payment QR Code
           </h2>
           <div className="flex gap-4">
-            <input type="number" placeholder="Amount (SOL)" className="border rounded px-4 py-2" defaultValue="0.1" />
+            <input 
+              type="number" 
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              placeholder="Amount (SOL)" 
+              className="border rounded px-4 py-2" 
+            />
             <button onClick={generateQR} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
               Generate QR
             </button>
           </div>
         </div>
 
-        {/* Payments List */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Recent Payments</h2>
           {payments.length === 0 ? (
-            <p className="text-gray-500">No payments yet</p>
+            <p className="text-gray-500">No payments yet. Send SOL to your wallet to test!</p>
           ) : (
             <table className="w-full">
               <thead>
@@ -107,9 +93,9 @@ export default function App() {
               <tbody>
                 {payments.map((p, i) => (
                   <tr key={i} className="border-b">
-                    <td className="py-2">{p.timestamp}</td>
-                    <td className="py-2">{p.amount} SOL</td>
-                    <td className="py-2"><span className="text-green-600">✓ Confirmed</span></td>
+                    <td className="py-2 text-sm">{p.timestamp}</td>
+                    <td className="py-2 font-mono">{p.amount} SOL</td>
+                    <td className="py-2"><span className="text-green-600 text-sm">✓ {p.status}</span></td>
                   </tr>
                 ))}
               </tbody>
