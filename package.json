@@ -4,6 +4,7 @@
   "description": "Autonomous payment agent for merchants accepting crypto via Solana",
   "main": "dist/index.js",
   "scripts": {
+    "demo": "tsx demo.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
