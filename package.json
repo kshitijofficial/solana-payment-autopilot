@@ -5,11 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "demo": "tsx demo.ts",
+    "api": "tsx src/api/server.ts",
+    "dashboard": "cd dashboard && npm run dev",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "agent": "tsx src/agent/index.ts",
-    "api": "tsx src/api/index.ts",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\""
