@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import { db } from '../database/supabase';
 import { conversionService } from '../services/ConversionService';
+import { emailService } from '../services/EmailService';
 
 export interface PaymentEvent {
   signature: string;
@@ -157,6 +158,17 @@ export class PaymentMonitorV2 extends EventEmitter {
           };
           
           this.emit('payment', paymentEvent);
+
+          // Send email notification
+          if (merchant.notification_email) {
+            emailService.sendPaymentNotification(
+              merchant.notification_email,
+              merchant.business_name,
+              amountSOL,
+              'SOL',
+              signature
+            ).catch(err => logger.error('Failed to send payment email', err));
+          }
 
           // Trigger auto-conversion for SOL payments
           if (merchant.auto_convert_enabled) {

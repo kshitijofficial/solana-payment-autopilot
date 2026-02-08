@@ -5,6 +5,7 @@ import { Keypair } from '@solana/web3.js';
 import { JupiterConverter } from '../modules/JupiterConverter';
 import { db } from '../database/supabase';
 import { logger } from '../utils/logger';
+import { emailService } from './EmailService';
 import bs58 from 'bs58';
 
 export class ConversionService {
@@ -23,7 +24,13 @@ export class ConversionService {
   /**
    * Process conversion for a SOL payment
    */
-  async processConversion(transactionId: string, merchantWalletKeypair: Keypair, amountSol: number): Promise<boolean> {
+  async processConversion(
+    transactionId: string, 
+    merchantWalletKeypair: Keypair, 
+    amountSol: number,
+    merchantEmail?: string,
+    merchantName?: string
+  ): Promise<boolean> {
     try {
       logger.info(`Starting conversion for transaction ${transactionId}: ${amountSol} SOL`);
 
@@ -79,6 +86,20 @@ export class ConversionService {
       });
 
       logger.info(`✅ Conversion completed: ${swapResult.outputAmount} USDC`);
+
+      // Send email notification
+      if (merchantEmail && merchantName) {
+        emailService.sendConversionNotification(
+          merchantEmail,
+          merchantName,
+          amountSol,
+          'SOL',
+          swapResult.outputAmount,
+          'USDC',
+          swapResult.signature!
+        ).catch(err => logger.error('Failed to send conversion email', err));
+      }
+
       return true;
 
     } catch (error) {
@@ -112,7 +133,13 @@ export class ConversionService {
       // In production, you'd use a secure key management system
       const mockKeypair = Keypair.generate();
 
-      await this.processConversion(transactionId, mockKeypair, amountSol);
+      await this.processConversion(
+        transactionId, 
+        mockKeypair, 
+        amountSol,
+        merchant.notification_email || merchant.email,
+        merchant.business_name
+      );
 
     } catch (error) {
       logger.error('Auto-conversion failed', error);
