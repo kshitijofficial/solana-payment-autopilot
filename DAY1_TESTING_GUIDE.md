@@ -1,196 +1,177 @@
-# Day 1 - Final Testing Guide
+# Day 1 Testing Guide 🧪
 
-## ✅ What's Complete
-
-### Infrastructure
-- ✅ Supabase database (5 tables: merchants, transactions, conversions, wallets, notifications)
-- ✅ Database service layer with Supabase client
-- ✅ API server with RESTful endpoints
-- ✅ Payment monitor (polling every 15 seconds)
-- ✅ QR code generation
-
-### Tests Passed (6/6)
-1. ✅ Database connection
-2. ✅ Merchant creation
-3. ✅ QR code generation
-4. ✅ Payment monitor initialization
-5. ✅ Transaction retrieval
-6. ✅ Environment variables
+Quick guide to test the payment flow yourself.
 
 ---
 
-## 🧪 Manual Testing Steps
+## Prerequisites
 
-### Test 1: API Server Health Check
+✅ API server running (should already be started)  
+✅ Devnet SOL from faucet  
+✅ Phantom wallet (optional, for QR code testing)
+
+---
+
+## Test 1: API Health Check
 
 ```bash
-# Terminal 1: Start API server
-cd /root/.openclaw/workspace/solana-payment-autopilot
-npm run api
+curl http://localhost:3000/api/health
 ```
 
-Open browser: http://localhost:3000/api/health
-
-**Expected:** `{"status":"ok","timestamp":"..."}`
+**Expected output:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-02-08T..."
+}
+```
 
 ---
 
-### Test 2: Create Merchant via API
+## Test 2: Create Merchant & Get Wallet
 
 ```bash
-# Terminal 2
 curl -X POST http://localhost:3000/api/merchants \
   -H "Content-Type: application/json" \
   -d '{
-    "business_name": "Manual Test Shop",
-    "email": "manual@test.com"
-  }'
+    "business_name": "Test Coffee Shop",
+    "email": "test@example.com"
+  }' | jq .
 ```
 
-**Expected:**
-- Merchant created with auto-generated wallet
-- QR code data URL returned
-- 200 OK response
+**Expected output:**
+```json
+{
+  "success": true,
+  "data": {
+    "merchant": {
+      "id": "abc-123-...",
+      "business_name": "Test Coffee Shop",
+      "wallet_address": "HHjT..."
+    },
+    "qr_code": "data:image/png;base64,...",
+    "solana_pay_url": "solana:HHjT..."
+  }
+}
+```
 
-**Save the wallet_address from response!**
+**Save the wallet_address and merchant.id!**
 
 ---
 
-### Test 3: Generate Payment QR Code
+## Test 3: Fund Merchant Wallet
+
+### Option A: Solana CLI
+```bash
+solana airdrop 0.5 <WALLET_ADDRESS> --url devnet
+```
+
+### Option B: Web Faucet
+1. Go to https://faucet.solana.com
+2. Paste wallet address
+3. Select "Devnet"
+4. Request airdrop
+
+---
+
+## Test 4: Send Payment
+
+### Option A: Phantom Wallet
+1. Switch to Devnet network
+2. Send 0.1 SOL to merchant wallet address
+
+### Option B: Solana CLI
+```bash
+solana transfer <MERCHANT_WALLET> 0.1 --url devnet --allow-unfunded-recipient
+```
+
+---
+
+## Test 5: Check Payment Detection
+
+**Wait 15-30 seconds** (polling interval), then:
+
+```bash
+curl http://localhost:3000/api/merchants/<MERCHANT_ID>/transactions | jq .
+```
+
+**Expected output:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "tx-123...",
+      "signature": "5Kj...",
+      "from_address": "sender...",
+      "to_address": "merchant...",
+      "amount": "0.100000000",
+      "token": "SOL",
+      "status": "confirmed",
+      "created_at": "2026-02-08T..."
+    }
+  ]
+}
+```
+
+---
+
+## Test 6: Verify in Supabase Dashboard
+
+1. Go to Supabase dashboard: https://supabase.com/dashboard
+2. Select your project
+3. Click "Table Editor"
+4. Check `transactions` table
+5. You should see the payment record
+
+---
+
+## Test 7: Generate QR Code
 
 ```bash
 curl -X POST http://localhost:3000/api/payments/qr \
   -H "Content-Type: application/json" \
   -d '{
-    "wallet_address": "YOUR_WALLET_ADDRESS",
+    "wallet_address": "<MERCHANT_WALLET>",
     "amount": 0.05,
-    "label": "Test Coffee"
-  }'
+    "label": "Coffee"
+  }' | jq -r '.data.qr_code' > qr.txt
 ```
 
-**Expected:** QR code data URL + Solana Pay URL
+Then open `qr.txt` in browser (it's a data URL) to see the QR code.
 
 ---
 
-### Test 4: Live Payment Detection
-
-#### Option A: Using test-payment-flow.ts
-
-```bash
-# This creates a test merchant and monitors it
-npx tsx test-payment-flow.ts
-```
-
-Follow the instructions to:
-1. Get devnet SOL from faucet
-2. Send to the generated wallet
-3. Watch for payment detection
-
-#### Option B: Using existing merchant
-
-```bash
-# Monitor specific wallet address
-npx tsx -e "
-import './src/modules/PaymentMonitor';
-import { PaymentMonitor } from './src/modules/PaymentMonitor';
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-const monitor = new PaymentMonitor(
-  process.env.SOLANA_RPC_URL!,
-  process.env.HELIUS_API_KEY!
-);
-
-monitor.on('payment', (payment) => {
-  console.log('💰 Payment received:', payment);
-});
-
-monitor.start(['YOUR_WALLET_ADDRESS']);
-console.log('Monitoring...');
-"
-```
-
----
-
-### Test 5: Verify Database Storage
-
-After a payment is detected:
-
-```bash
-# Check transactions in database
-curl http://localhost:3000/api/merchants/MERCHANT_ID/transactions
-```
-
-**Expected:** Transaction record with:
-- Signature
-- Amount
-- Token (SOL)
-- Status (confirmed)
-- Timestamps
-
----
-
-## 📊 Quick Status Check
-
-Run all automated tests:
-```bash
-npx tsx day1-complete-test.ts
-```
-
-Should show: **6/6 tests passed**
-
----
-
-## 🔗 Useful Links
-
-- **Devnet Faucet:** https://faucet.solana.com
-- **Solscan (devnet):** https://solscan.io/?cluster=devnet
-- **API Docs:** http://localhost:3000 (when server running)
-
----
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Payment not detected?
-1. Check wallet has devnet SOL: https://solscan.io/account/YOUR_WALLET?cluster=devnet
-2. Verify transaction confirmed (32 confirmations)
-3. Check logs in payment monitor terminal
-4. Polling happens every 15 seconds (be patient)
+- Check API logs: `docker logs <container> -f` or check terminal
+- Verify polling is running (logs every 15s)
+- Confirm transaction on Solscan: `https://solscan.io/tx/<SIGNATURE>?cluster=devnet`
 
-### Database connection failed?
-1. Check `.env` file has correct SUPABASE credentials
-2. Verify password is URL-encoded (`@` → `%40`, `$` → `%24`, etc.)
-3. Test with: `npx tsx test-supabase.ts`
+### Airdrop failed?
+- Rate limit hit - wait 5 minutes and try again
+- Use alternative faucet: https://solfaucet.com
 
-### API server won't start?
-1. Check port 3000 is available: `lsof -i :3000`
-2. Kill existing process: `kill -9 $(lsof -t -i :3000)`
-3. Check logs for detailed error
+### Database error?
+- Check Supabase connection string in `.env`
+- Verify tables exist in Supabase dashboard
+- Run `npm run test:db` to test connection
 
 ---
 
-## ✅ Success Criteria (Day 1)
+## Success Checklist
 
-- [ ] API server responds on http://localhost:3000
-- [ ] Can create merchant via API
-- [ ] QR code generated successfully
-- [ ] Payment monitor detects incoming devnet SOL
-- [ ] Transaction saved to database with correct details
-- [ ] Can retrieve transaction via API
-
----
-
-## 📅 Next Steps (Day 2)
-
-Tomorrow we'll add:
-- Jupiter SOL→USDC auto-conversion
-- Conversion error handling
-- Swap signature storage
-- Real-time conversion status updates
+- [ ] API health check passes
+- [ ] Merchant created successfully
+- [ ] Wallet funded with devnet SOL
+- [ ] Payment sent to merchant
+- [ ] Payment detected within 30 seconds
+- [ ] Transaction visible in API response
+- [ ] Transaction visible in Supabase dashboard
 
 ---
 
-**Current test wallet (from automated tests):**
-Address: `AvTvB1P1xjU6X9Cds9cB5aodYMHjMrUaDgmJH41HXdkk`
+**Once all tests pass, Day 1 is validated! ✅**
 
-Send 0.05 SOL to this address to test payment detection!
+Next: Day 2 - Jupiter SOL→USDC conversion
