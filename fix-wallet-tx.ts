@@ -4,7 +4,7 @@ dotenv.config();
 import { Connection } from '@solana/web3.js';
 import { db } from './src/database/supabase';
 
-const walletAddress = 'HhDAeZ8qF7YnCBMYPPMTa3XbWzN3UURB6Xw47x4DTLiE';
+const walletAddress = '8FpKD3ju9axxoie6uGn9AMD4H6ukNB1RfWFe6xiHR8FV';
 
 async function processWallet() {
   console.log(`🔍 Processing wallet: ${walletAddress}\n`);

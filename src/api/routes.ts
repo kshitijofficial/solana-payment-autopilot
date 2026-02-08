@@ -80,6 +80,15 @@ router.post('/merchants', async (req: Request, res: Response) => {
     });
 
     logger.info(`Created merchant: ${business_name} (${walletAddress})`);
+    
+    // Add wallet to payment monitor
+    try {
+      const { monitorService } = await import('../services/MonitorService');
+      await monitorService.addWallet(walletAddress);
+      logger.info(`Added wallet to monitor: ${walletAddress}`);
+    } catch (error) {
+      logger.error('Failed to add wallet to monitor', error);
+    }
   } catch (error) {
     logger.error('Failed to create merchant', error);
     res.status(500).json({ success: false, error: 'Failed to create merchant' });
