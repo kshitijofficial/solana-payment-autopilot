@@ -3,6 +3,7 @@ import { db } from '../database/supabase';
 import { logger } from '../utils/logger';
 import { Keypair } from '@solana/web3.js';
 import QRCode from 'qrcode';
+import { conversionService } from '../services/ConversionService';
 
 const router = Router();
 
@@ -152,6 +153,47 @@ router.post('/payments/qr', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Failed to generate QR code', error);
     res.status(500).json({ success: false, error: 'Failed to generate QR code' });
+  }
+});
+
+// Get conversions for transaction
+router.get('/transactions/:transactionId/conversions', async (req: Request, res: Response) => {
+  try {
+    const { transactionId } = req.params;
+
+    const { data, error } = await db.getDb()
+      .from('conversions')
+      .select('*')
+      .eq('transaction_id', transactionId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      logger.error('Failed to get conversions', error);
+      return res.status(500).json({ success: false, error: 'Failed to fetch conversions' });
+    }
+
+    res.json({ success: true, data: data || [] });
+  } catch (error) {
+    logger.error('Failed to get conversions', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch conversions' });
+  }
+});
+
+// Retry failed conversion
+router.post('/conversions/:conversionId/retry', async (req: Request, res: Response) => {
+  try {
+    const { conversionId } = req.params;
+
+    const success = await conversionService.retryConversion(conversionId);
+
+    if (success) {
+      res.json({ success: true, message: 'Conversion retry successful' });
+    } else {
+      res.status(500).json({ success: false, error: 'Conversion retry failed' });
+    }
+  } catch (error) {
+    logger.error('Failed to retry conversion', error);
+    res.status(500).json({ success: false, error: 'Failed to retry conversion' });
   }
 });
 

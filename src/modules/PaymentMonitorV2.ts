@@ -2,6 +2,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import { db } from '../database/supabase';
+import { conversionService } from '../services/ConversionService';
 
 export interface PaymentEvent {
   signature: string;
@@ -156,6 +157,15 @@ export class PaymentMonitorV2 extends EventEmitter {
           };
           
           this.emit('payment', paymentEvent);
+
+          // Trigger auto-conversion for SOL payments
+          if (merchant.auto_convert_enabled) {
+            logger.info(`🔄 Triggering auto-conversion: ${amountSOL} SOL → USDC`);
+            
+            // Run conversion in background (don't await)
+            conversionService.autoConvertPayment(saved.id!, address, amountSOL)
+              .catch(err => logger.error('Auto-conversion failed', err));
+          }
         }
 
         // Mark as processed
