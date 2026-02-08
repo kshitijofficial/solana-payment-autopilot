@@ -3,6 +3,7 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { logger } from '../utils/logger';
 import routes from './routes';
+import { monitorService } from '../services/MonitorService';
 
 // Load environment variables first
 dotenv.config();
@@ -33,7 +34,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`🚀 API server running on http://localhost:${PORT}`);
   logger.info(`📋 Endpoints:`);
   logger.info(`   GET  /api/health`);
@@ -41,6 +42,22 @@ app.listen(PORT, () => {
   logger.info(`   POST /api/merchants`);
   logger.info(`   GET  /api/merchants/:merchantId/transactions`);
   logger.info(`   POST /api/payments/qr`);
+  
+  // Start payment monitor
+  try {
+    await monitorService.start();
+    console.log(`\n✅ Payment monitor started (polling every 15s)\n`);
+  } catch (error) {
+    logger.error('Failed to start payment monitor', error);
+    console.log(`\n⚠️  Payment monitor failed to start (check logs)\n`);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n\n👋 Shutting down...');
+  monitorService.stop();
+  process.exit(0);
 });
 
 export default app;
