@@ -2,7 +2,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
-import { Transaction, PaymentStatus } from '../types';
+import { db } from '../database/supabase';
 
 export interface PaymentEvent {
   signature: string;
@@ -37,18 +37,18 @@ export class PaymentMonitor extends EventEmitter {
     
     logger.info(`Starting payment monitor for ${addresses.length} addresses`);
     
-    // Connect to Helius WebSocket
-    await this.connectWebSocket();
-    
-    // Also poll for recent transactions (backup mechanism)
+    // Use polling only for free tier (WebSocket requires paid Helius plan)
     this.startPolling();
+    
+    logger.info('✅ Payment monitoring active (polling every 15 seconds)');
   }
 
   /**
    * Connect to Helius WebSocket for real-time updates
    */
   private async connectWebSocket() {
-    const wsUrl = `wss://api.helius.xyz/v0/ws?api-key=${this.heliusApiKey}`;
+    // Use correct Helius WebSocket endpoint for devnet
+    const wsUrl = `wss://atlas-devnet.helius-rpc.com?api-key=${this.heliusApiKey}`;
     
     try {
       this.heliusWs = new WebSocket(wsUrl);
@@ -167,6 +167,9 @@ export class PaymentMonitor extends EventEmitter {
               logger.info(`Payment detected: ${amountSOL} SOL from ${source} to ${destination}`);
               logger.info(`Transaction: https://solscan.io/tx/${signature}`);
 
+              // Save to database
+              await this.saveTransactionToDatabase(paymentEvent);
+
               // Emit payment event
               this.emit('payment', paymentEvent);
             }
@@ -181,9 +184,17 @@ export class PaymentMonitor extends EventEmitter {
   }
 
   /**
-   * Backup polling mechanism (in case WebSocket fails)
+   * Polling mechanism (primary for free tier)
    */
   private startPolling() {
+    // Poll immediately on start
+    for (const address of this.watchedAddresses) {
+      this.checkRecentTransactions(address).catch(err => 
+        logger.error(`Initial poll failed for ${address}`, err)
+      );
+    }
+    
+    // Then poll every 15 seconds
     setInterval(async () => {
       for (const address of this.watchedAddresses) {
         try {
@@ -192,7 +203,7 @@ export class PaymentMonitor extends EventEmitter {
           logger.error(`Polling failed for ${address}`, error);
         }
       }
-    }, 30000); // Poll every 30 seconds
+    }, 15000); // Poll every 15 seconds (faster for demo)
   }
 
   /**
@@ -262,6 +273,38 @@ export class PaymentMonitor extends EventEmitter {
     setTimeout(() => {
       this.connectWebSocket();
     }, this.reconnectDelay);
+  }
+
+  /**
+   * Save transaction to database
+   */
+  private async saveTransactionToDatabase(payment: PaymentEvent) {
+    try {
+      // Get merchant by wallet address
+      const merchant = await db.getMerchantByWallet(payment.toAddress);
+      
+      if (!merchant) {
+        logger.warn(`Payment received for unknown merchant: ${payment.toAddress}`);
+        return;
+      }
+
+      // Create transaction record
+      await db.createTransaction({
+        merchant_id: merchant.id,
+        signature: payment.signature,
+        from_address: payment.fromAddress,
+        to_address: payment.toAddress,
+        amount: payment.amount,
+        token: payment.token,
+        status: 'confirmed',
+        confirmations: 32,
+        block_time: payment.timestamp,
+      });
+
+      logger.info(`✅ Transaction saved to database for merchant: ${merchant.business_name}`);
+    } catch (error) {
+      logger.error('Failed to save transaction to database', error);
+    }
   }
 
   /**
