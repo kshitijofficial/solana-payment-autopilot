@@ -59,6 +59,13 @@ export class DatabaseService {
     logger.info('Database service initialized with Supabase');
   }
 
+  /**
+   * Get Supabase client for direct queries
+   */
+  getClient() {
+    return this.supabase;
+  }
+
   // ===== MERCHANTS =====
 
   async getMerchantByWallet(walletAddress: string): Promise<Merchant | null> {

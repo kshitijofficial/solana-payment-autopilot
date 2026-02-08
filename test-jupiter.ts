@@ -10,7 +10,8 @@ async function testJupiter() {
   console.log('═'.repeat(60));
 
   const isDevnet = process.env.SOLANA_NETWORK === 'devnet';
-  console.log(`\n📍 Network: ${isDevnet ? 'DEVNET' : 'MAINNET'}`);
+  const networkName = isDevnet ? 'DEVNET' : 'MAINNET';
+  console.log(`\nNetwork: ${networkName}`);
 
   if (isDevnet) {
     console.log('⚠️  Jupiter doesn't support devnet');

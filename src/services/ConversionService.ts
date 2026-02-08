@@ -125,7 +125,7 @@ export class ConversionService {
   async retryConversion(conversionId: string): Promise<boolean> {
     try {
       // Get conversion record
-      const conversions = await db.getDb().from('conversions')
+      const conversions = await db.getClient().from('conversions')
         .select('*')
         .eq('id', conversionId)
         .single();

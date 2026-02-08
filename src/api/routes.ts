@@ -161,7 +161,7 @@ router.get('/transactions/:transactionId/conversions', async (req: Request, res:
   try {
     const { transactionId } = req.params;
 
-    const { data, error } = await db.getDb()
+    const { data, error } = await db.getClient()
       .from('conversions')
       .select('*')
       .eq('transaction_id', transactionId)
