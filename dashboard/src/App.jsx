@@ -17,6 +17,10 @@ export default function App() {
   const [newMerchant, setNewMerchant] = useState({ business_name: '', email: '' });
   const [qrAmount, setQrAmount] = useState('0.05');
   const [qrLabel, setQrLabel] = useState('Payment');
+  
+  // Filter states
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadMerchants();
@@ -142,6 +146,55 @@ export default function App() {
 
   const totalAmount = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
   const totalConverted = Object.values(conversions).reduce((sum, conv) => sum + (conv.to_amount || 0), 0);
+
+  // Filter transactions
+  const filteredTransactions = transactions.filter(tx => {
+    const matchesStatus = filterStatus === 'all' || tx.status === filterStatus;
+    const matchesSearch = !searchTerm || 
+      tx.signature.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tx.from_address.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
+
+  // CSV Export
+  const exportToCSV = () => {
+    if (transactions.length === 0) {
+      alert('No transactions to export');
+      return;
+    }
+
+    const headers = ['Date', 'Time', 'From', 'To', 'Amount', 'Token', 'Converted (USDC)', 'Status', 'Signature'];
+    const rows = transactions.map(tx => {
+      const conversion = conversions[tx.id];
+      const date = new Date(tx.created_at);
+      return [
+        date.toLocaleDateString(),
+        date.toLocaleTimeString(),
+        tx.from_address,
+        tx.to_address,
+        tx.amount,
+        tx.token,
+        conversion ? conversion.to_amount.toFixed(2) : '-',
+        tx.status,
+        tx.signature
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (loading) {
     return (
@@ -363,9 +416,53 @@ export default function App() {
             {/* Transactions List */}
             {selectedMerchant && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-6">
-                  Recent Transactions
-                </h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Transaction History
+                  </h2>
+                  {transactions.length > 0 && (
+                    <button
+                      onClick={exportToCSV}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
+                    >
+                      📊 Export CSV
+                    </button>
+                  )}
+                </div>
+
+                {/* Filters & Results Count */}
+                {transactions.length > 0 && (
+                  <>
+                    <div className="mb-4 text-sm text-gray-600">
+                      Showing {filteredTransactions.length} of {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+                    </div>
+                    <div className="mb-6 grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Status</label>
+                      <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none transition-colors"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
+                      <input
+                        type="text"
+                        placeholder="Search by signature or address..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                  </>
+                )}
                 
                 {transactions.length === 0 ? (
                   <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl">
@@ -382,6 +479,19 @@ export default function App() {
                       Get Devnet SOL from Faucet
                     </a>
                   </div>
+                ) : filteredTransactions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No transactions match your filters</p>
+                    <button
+                      onClick={() => {
+                        setFilterStatus('all');
+                        setSearchTerm('');
+                      }}
+                      className="mt-3 text-blue-600 hover:text-blue-700 text-sm font-semibold"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -396,7 +506,7 @@ export default function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map((tx, idx) => {
+                        {filteredTransactions.map((tx, idx) => {
                           const conversion = conversions[tx.id];
                           return (
                           <tr key={tx.id} className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
