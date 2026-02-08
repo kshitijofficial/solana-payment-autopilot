@@ -1,19 +1,16 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { PaymentMonitor } from '../modules/PaymentMonitor';
+import { PaymentMonitorV2 } from '../modules/PaymentMonitorV2';
 import { db } from '../database/supabase';
 import { logger } from '../utils/logger';
 
 export class MonitorService {
-  private monitor: PaymentMonitor;
+  private monitor: PaymentMonitorV2;
   private isRunning: boolean = false;
 
   constructor() {
-    this.monitor = new PaymentMonitor(
-      process.env.SOLANA_RPC_URL!,
-      process.env.HELIUS_API_KEY!
-    );
+    this.monitor = new PaymentMonitorV2(process.env.SOLANA_RPC_URL!);
   }
 
   async start() {
