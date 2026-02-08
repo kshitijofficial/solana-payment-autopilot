@@ -7,6 +7,7 @@ export default function App() {
   const [merchants, setMerchants] = useState([]);
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [conversions, setConversions] = useState({});
   const [qrCode, setQrCode] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,6 +55,17 @@ export default function App() {
       const data = await res.json();
       if (data.success) {
         setTransactions(data.data);
+        
+        // Load conversions for each transaction
+        const conversionMap = {};
+        for (const tx of data.data) {
+          const convRes = await fetch(`${API}/transactions/${tx.id}/conversions`);
+          const convData = await convRes.json();
+          if (convData.success && convData.data.length > 0) {
+            conversionMap[tx.id] = convData.data[0]; // Get latest conversion
+          }
+        }
+        setConversions(conversionMap);
       }
     } catch (error) {
       console.error('Failed to load transactions:', error);
@@ -129,6 +141,7 @@ export default function App() {
   };
 
   const totalAmount = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  const totalConverted = Object.values(conversions).reduce((sum, conv) => sum + (conv.to_amount || 0), 0);
 
   if (loading) {
     return (
@@ -202,8 +215,8 @@ export default function App() {
               />
               <StatsCard 
                 icon={<TrendingUp className="text-indigo-600" />} 
-                title="Total Volume" 
-                value={`${totalAmount.toFixed(4)} SOL`}
+                title="Total Converted" 
+                value={totalConverted > 0 ? `$${totalConverted.toFixed(2)}` : `${totalAmount.toFixed(4)} SOL`}
                 gradient="from-indigo-500 to-indigo-600"
               />
             </div>
@@ -378,11 +391,14 @@ export default function App() {
                           <th className="py-3 px-4 font-semibold text-gray-700">Time</th>
                           <th className="py-3 px-4 font-semibold text-gray-700">From</th>
                           <th className="py-3 px-4 font-semibold text-gray-700">Amount</th>
+                          <th className="py-3 px-4 font-semibold text-gray-700">Converted</th>
                           <th className="py-3 px-4 font-semibold text-gray-700">Link</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map((tx, idx) => (
+                        {transactions.map((tx, idx) => {
+                          const conversion = conversions[tx.id];
+                          return (
                           <tr key={tx.id} className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                             <td className="py-4 px-4">
                               <StatusBadge status={tx.status} />
@@ -397,6 +413,20 @@ export default function App() {
                               {tx.amount} <span className="text-gray-500">{tx.token}</span>
                             </td>
                             <td className="py-4 px-4">
+                              {conversion ? (
+                                <div className="flex flex-col">
+                                  <span className="font-mono text-sm text-green-700 font-semibold">
+                                    {conversion.to_amount.toFixed(2)} USDC
+                                  </span>
+                                  <span className={`text-xs ${conversion.status === 'completed' ? 'text-green-600' : conversion.status === 'pending' ? 'text-yellow-600' : 'text-red-600'}`}>
+                                    {conversion.status}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4">
                               <a 
                                 href={`https://solscan.io/tx/${tx.signature}?cluster=devnet`}
                                 target="_blank"
@@ -407,7 +437,8 @@ export default function App() {
                               </a>
                             </td>
                           </tr>
-                        ))}
+                        );
+                        })}
                       </tbody>
                     </table>
                   </div>
