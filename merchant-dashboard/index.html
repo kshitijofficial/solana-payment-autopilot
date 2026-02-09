@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Dashboard - Solana Payment Autopilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <nav class="bg-white shadow-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-5">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                        ☄️ Solana Payment Autopilot
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-1">Welcome back, <span id="businessName" class="font-semibold"></span></p>
+                </div>
+                <button onclick="refreshData()" id="refreshBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Received</h3>
+                </div>
+                <p class="text-3xl font-bold text-gray-900" id="totalReceived">0 SOL</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Transactions</h3>
+                </div>
+                <p class="text-3xl font-bold text-gray-900" id="totalTransactions">0</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="p-3 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Converted to USDC</h3>
+                </div>
+                <p class="text-3xl font-bold text-gray-900" id="totalConverted">$0.00</p>
+            </div>
+        </div>
+
+        <!-- Wallet Address Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                Your Payment Wallet
+            </h2>
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <p class="text-sm font-semibold text-gray-700 mb-3">Customers send payments to this address:</p>
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 font-mono text-sm bg-white p-4 rounded-lg break-all border border-gray-300" id="walletAddress">
+                        Loading...
+                    </div>
+                    <button onclick="copyWallet()" class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 whitespace-nowrap">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+                <a href="#" id="solscanLink" target="_blank" class="inline-flex items-center gap-2 text-blue-600 text-sm mt-4 hover:text-blue-700 transition-colors font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    View on Solscan (Devnet)
+                </a>
+            </div>
+        </div>
+
+        <!-- QR Code Generator -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                </svg>
+                Generate Payment QR Code
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">Create QR codes for in-person payments at your store or register</p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Amount (SOL)</label>
+                        <input 
+                            type="number"
+                            step="0.001"
+                            value="0.05"
+                            id="qrAmount"
+                            placeholder="0.05"
+                            class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Label (Optional)</label>
+                        <input 
+                            type="text"
+                            id="qrLabel"
+                            placeholder="Payment"
+                            class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                        />
+                    </div>
+                    <button 
+                        onclick="generateQR()"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all shadow-lg"
+                    >
+                        Generate QR Code
+                    </button>
+                </div>
+                
+                <div id="qrCodeContainer" class="hidden flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+                    <p class="text-sm font-semibold text-gray-700 mb-3">Scan with Phantom Wallet (Devnet)</p>
+                    <img id="qrCodeImage" src="" alt="Payment QR Code" class="w-64 h-64 rounded-lg shadow-md" />
+                    <p class="text-xs text-gray-600 mt-3 text-center">
+                        <span id="qrAmountDisplay" class="font-mono bg-white px-2 py-1 rounded"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Transaction History</h2>
+                <button onclick="exportCSV()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export CSV
+                </button>
+            </div>
+
+            <div id="transactionsList" class="space-y-4">
+                <div class="text-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>Loading transactions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        // Configuration - Replace with actual merchant ID
+        const MERCHANT_ID = 'be87c918-36a4-4d59-9566-cad574c4e370'; // "check" merchant
+        const API_BASE = 'http://localhost:3000/api';
+
+        let merchant = null;
+        let transactions = [];
+        let conversions = {};
+
+        // Load merchant data on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMerchantData();
+            // Auto-refresh every 15 seconds
+            setInterval(loadMerchantData, 15000);
+        });
+
+        async function loadMerchantData() {
+            try {
+                // Get merchant info
+                const merchantRes = await fetch(`${API_BASE}/merchants`);
+                const merchantData = await merchantRes.json();
+                
+                if (merchantData.success) {
+                    merchant = merchantData.data.find(m => m.id === MERCHANT_ID);
+                    
+                    if (merchant) {
+                        document.getElementById('businessName').textContent = merchant.business_name;
+                        document.getElementById('walletAddress').textContent = merchant.wallet_address;
+                        document.getElementById('solscanLink').href = `https://solscan.io/account/${merchant.wallet_address}?cluster=devnet`;
+                        document.getElementById('qrLabel').value = merchant.business_name;
+                    }
+                }
+
+                // Get transactions
+                const txRes = await fetch(`${API_BASE}/merchants/${MERCHANT_ID}/transactions`);
+                const txData = await txRes.json();
+                
+                if (txData.success) {
+                    transactions = txData.data;
+                    
+                    // Load conversions
+                    conversions = {};
+                    for (const tx of transactions) {
+                        const convRes = await fetch(`${API_BASE}/transactions/${tx.id}/conversions`);
+                        const convData = await convRes.json();
+                        if (convData.success && convData.data.length > 0) {
+                            conversions[tx.id] = convData.data[0];
+                        }
+                    }
+                    
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Failed to load data:', error);
+            }
+        }
+
+        function updateUI() {
+            // Update stats
+            const totalAmount = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+            const totalConverted = Object.values(conversions).reduce((sum, conv) => sum + (conv.to_amount || 0), 0);
+            
+            document.getElementById('totalReceived').textContent = `${totalAmount.toFixed(4)} SOL`;
+            document.getElementById('totalTransactions').textContent = transactions.length;
+            document.getElementById('totalConverted').textContent = totalConverted > 0 ? `$${totalConverted.toFixed(2)}` : `${totalAmount.toFixed(4)} SOL`;
+
+            // Update transaction list
+            const list = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl">
+                        <div class="text-6xl mb-4">💳</div>
+                        <p class="text-gray-600 mb-2 text-lg font-medium">No transactions yet</p>
+                        <p class="text-sm text-gray-500 mb-4">Share your wallet address with customers to receive payments</p>
+                        <a href="https://faucet.solana.com" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            Get Devnet SOL from Faucet
+                        </a>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = transactions.map(tx => {
+                    const conversion = conversions[tx.id];
+                    const date = new Date(tx.created_at);
+                    const statusColor = tx.status === 'confirmed' ? 'green' : 'yellow';
+                    
+                    return `
+                        <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-${statusColor}-100 rounded-lg">
+                                        <svg class="w-5 h-5 text-${statusColor}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">${tx.amount} ${tx.token}</p>
+                                        <p class="text-xs text-gray-500">${date.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold border ${
+                                    tx.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                }">
+                                    ${tx.status.toUpperCase()}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">From:</span>
+                                    <span class="font-mono text-gray-900">${tx.from_address.slice(0, 8)}...${tx.from_address.slice(-8)}</span>
+                                </div>
+                                ${conversion ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Converted:</span>
+                                    <span class="font-mono text-green-700 font-semibold">${conversion.to_amount.toFixed(2)} USDC</span>
+                                </div>
+                                ` : ''}
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                                    <span class="text-gray-600">Transaction:</span>
+                                    <a href="https://solscan.io/tx/${tx.signature}?cluster=devnet" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                                        View
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function generateQR() {
+            const amount = document.getElementById('qrAmount').value;
+            const label = document.getElementById('qrLabel').value;
+
+            if (!merchant || !amount) {
+                showToast('Please enter an amount', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/payments/qr`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        wallet_address: merchant.wallet_address,
+                        amount: amount,
+                        label: label || merchant.business_name
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('qrCodeImage').src = data.data.qr_code;
+                    document.getElementById('qrAmountDisplay').textContent = `${amount} SOL`;
+                    document.getElementById('qrCodeContainer').classList.remove('hidden');
+                    showToast('QR Code generated!');
+                } else {
+                    showToast('Failed to generate QR code', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to generate QR:', error);
+                showToast('Failed to generate QR code', 'error');
+            }
+        }
+
+        function copyWallet() {
+            const walletAddress = document.getElementById('walletAddress').textContent;
+            navigator.clipboard.writeText(walletAddress);
+            showToast('Wallet address copied!');
+        }
+
+        function exportCSV() {
+            if (transactions.length === 0) {
+                showToast('No transactions to export', 'error');
+                return;
+            }
+
+            const headers = ['Date', 'Time', 'From', 'Amount', 'Token', 'Converted (USDC)', 'Status', 'Signature'];
+            const rows = transactions.map(tx => {
+                const conversion = conversions[tx.id];
+                const date = new Date(tx.created_at);
+                return [
+                    date.toLocaleDateString(),
+                    date.toLocaleTimeString(),
+                    tx.from_address,
+                    tx.amount,
+                    tx.token,
+                    conversion ? conversion.to_amount.toFixed(2) : '-',
+                    tx.status,
+                    tx.signature
+                ];
+            });
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('CSV exported successfully!');
+        }
+
+        function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            btn.classList.add('animate-spin');
+            loadMerchantData().finally(() => {
+                setTimeout(() => btn.classList.remove('animate-spin'), 500);
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden', 'bg-green-600', 'bg-red-600');
+            toast.classList.add(type === 'error' ? 'bg-red-600' : 'bg-green-600');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
