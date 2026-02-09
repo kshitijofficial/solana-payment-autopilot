@@ -3,6 +3,7 @@ dotenv.config();
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { encodeURL, createQR } from '@solana/pay';
+import BigNumber from 'bignumber.js';
 import { db, PaymentRequest } from '../database/supabase';
 import { logger } from '../utils/logger';
 
@@ -96,10 +97,13 @@ export class PaymentRequestService {
     try {
       const recipientPubkey = new PublicKey(recipient);
       
+      // Convert amount to BigNumber (required by @solana/pay)
+      const amountBigNumber = new BigNumber(amount);
+      
       // Create Solana Pay URL
       const url = encodeURL({
         recipient: recipientPubkey,
-        amount,
+        amount: amountBigNumber,
         label,
         message,
       });
