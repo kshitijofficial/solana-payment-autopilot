@@ -56,10 +56,18 @@ export class EmailService {
       logger.info(`Email sent successfully to ${options.to}`);
       return true;
     } catch (error: any) {
-      logger.error('Failed to send email', {
-        error: error.message,
-        response: error.response?.data,
-      });
+      // Check if it's a Resend free tier restriction (403)
+      if (error.response?.status === 403 && error.response?.data?.message?.includes('testing emails')) {
+        logger.warn('⚠️  Email not sent: Resend free tier restriction', {
+          to: options.to,
+          hint: 'On free tier, emails can only be sent to your verified email. Update merchant notification_email to match.',
+        });
+      } else {
+        logger.error('Failed to send email', {
+          error: error.message,
+          response: error.response?.data,
+        });
+      }
       return false;
     }
   }

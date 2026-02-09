@@ -113,21 +113,39 @@ export class WebhookService {
         throw new Error(`Unexpected status code: ${response.status}`);
       }
     } catch (error: any) {
+      // Check if this is an expected failure (localhost, connection refused, 404)
+      const isExpectedFailure = 
+        url.includes('localhost') || 
+        url.includes('127.0.0.1') ||
+        error.code === 'ECONNREFUSED' ||
+        error.response?.status === 404;
+
+      if (isExpectedFailure && attempt === 1) {
+        logger.warn(`⚠️  Webhook delivery skipped (expected failure)`, {
+          payment_id: paymentId,
+          url,
+          reason: 'Test/dev endpoint not available',
+        });
+        return false; // Don't retry for expected failures
+      }
+
       logger.error(`❌ Webhook delivery failed (attempt ${attempt})`, {
         payment_id: paymentId,
         error: error.message,
         url,
       });
 
-      // Retry if we haven't exceeded max retries
-      if (attempt < this.maxRetries) {
+      // Retry if we haven't exceeded max retries and it's not an expected failure
+      if (attempt < this.maxRetries && !isExpectedFailure) {
         await new Promise((resolve) => setTimeout(resolve, this.retryDelayMs * attempt));
         return await this.sendWithRetry(url, payload, signature, paymentId, attempt + 1);
       }
 
-      logger.error(`❌ Webhook failed after ${this.maxRetries} attempts`, {
-        payment_id: paymentId,
-      });
+      if (!isExpectedFailure) {
+        logger.error(`❌ Webhook failed after ${this.maxRetries} attempts`, {
+          payment_id: paymentId,
+        });
+      }
       return false;
     }
   }
