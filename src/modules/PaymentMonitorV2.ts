@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { db } from '../database/supabase';
 import { conversionService } from '../services/ConversionService';
 import { emailService } from '../services/EmailService';
+import { webhookService } from '../services/WebhookService';
 
 export interface PaymentEvent {
   signature: string;
@@ -158,6 +159,25 @@ export class PaymentMonitorV2 extends EventEmitter {
           };
           
           this.emit('payment', paymentEvent);
+
+          // Check for matching payment request
+          const paymentRequest = await db.findPendingPaymentRequest(address, amountSOL);
+          if (paymentRequest) {
+            logger.info(`🎯 Matched payment to request: ${paymentRequest.payment_id}`);
+            
+            // Update payment request to paid
+            await db.updatePaymentRequest(paymentRequest.id!, {
+              status: 'paid',
+              transaction_id: saved.id,
+              paid_at: new Date().toISOString(),
+            });
+
+            // Trigger webhook if configured
+            if (paymentRequest.callback_url) {
+              webhookService.sendPaymentWebhook(paymentRequest, saved)
+                .catch(err => logger.error('Failed to send webhook', err));
+            }
+          }
 
           // Send email notification
           if (merchant.notification_email) {

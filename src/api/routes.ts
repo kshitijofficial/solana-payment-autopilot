@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { Keypair } from '@solana/web3.js';
 import QRCode from 'qrcode';
 import { conversionService } from '../services/ConversionService';
+import { paymentRequestService } from '../services/PaymentRequestService';
 
 const router = Router();
 
@@ -194,6 +195,98 @@ router.post('/conversions/:conversionId/retry', async (req: Request, res: Respon
   } catch (error) {
     logger.error('Failed to retry conversion', error);
     res.status(500).json({ success: false, error: 'Failed to retry conversion' });
+  }
+});
+
+// ===== PAYMENT REQUESTS =====
+
+// Create payment request
+router.post('/payment-requests', async (req: Request, res: Response) => {
+  try {
+    const {
+      merchant_id,
+      amount_usd,
+      order_id,
+      customer_email,
+      customer_name,
+      description,
+      callback_url,
+      metadata,
+      expires_in_minutes,
+    } = req.body;
+
+    if (!merchant_id || !amount_usd) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: merchant_id, amount_usd',
+      });
+    }
+
+    if (amount_usd <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'amount_usd must be greater than 0',
+      });
+    }
+
+    const result = await paymentRequestService.createPaymentRequest({
+      merchant_id,
+      amount_usd,
+      order_id,
+      customer_email,
+      customer_name,
+      description,
+      callback_url,
+      metadata,
+      expires_in_minutes,
+    });
+
+    if (!result) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to create payment request',
+      });
+    }
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    logger.error('Failed to create payment request', error);
+    res.status(500).json({ success: false, error: 'Failed to create payment request' });
+  }
+});
+
+// Get payment request by payment ID
+router.get('/payment-requests/:paymentId', async (req: Request, res: Response) => {
+  try {
+    const paymentRequest = await paymentRequestService.getPaymentRequest(req.params.paymentId);
+
+    if (!paymentRequest) {
+      return res.status(404).json({
+        success: false,
+        error: 'Payment request not found',
+      });
+    }
+
+    res.json({ success: true, data: paymentRequest });
+  } catch (error) {
+    logger.error('Failed to get payment request', error);
+    res.status(500).json({ success: false, error: 'Failed to get payment request' });
+  }
+});
+
+// Get payment requests for merchant
+router.get('/merchants/:merchantId/payment-requests', async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const paymentRequests = await paymentRequestService.getPaymentRequestsByMerchant(
+      req.params.merchantId,
+      limit
+    );
+
+    res.json({ success: true, data: paymentRequests });
+  } catch (error) {
+    logger.error('Failed to get payment requests', error);
+    res.status(500).json({ success: false, error: 'Failed to get payment requests' });
   }
 });
 
