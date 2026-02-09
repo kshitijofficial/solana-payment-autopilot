@@ -89,15 +89,23 @@ export class ConversionService {
 
       // Send email notification
       if (merchantEmail && merchantName) {
-        emailService.sendConversionNotification(
-          merchantEmail,
-          merchantName,
-          amountSol,
-          'SOL',
-          swapResult.outputAmount,
-          'USDC',
-          swapResult.signature!
-        ).catch(err => logger.error('Failed to send conversion email', err));
+        logger.info(`📧 Sending conversion email to ${merchantEmail}`);
+        try {
+          await emailService.sendConversionNotification(
+            merchantEmail,
+            merchantName,
+            amountSol,
+            'SOL',
+            swapResult.outputAmount,
+            'USDC',
+            swapResult.signature!
+          );
+          logger.info(`✅ Conversion email sent successfully`);
+        } catch (err) {
+          logger.error('Failed to send conversion email', err);
+        }
+      } else {
+        logger.warn(`⚠️  Skipping conversion email - merchantEmail: ${merchantEmail}, merchantName: ${merchantName}`);
       }
 
       return true;

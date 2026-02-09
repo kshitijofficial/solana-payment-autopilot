@@ -165,6 +165,104 @@ export class EmailService {
   }
 
   /**
+   * Send customer payment confirmation
+   */
+  async sendCustomerPaymentConfirmation(
+    customerEmail: string,
+    customerName: string,
+    amount: number,
+    token: string,
+    merchantName: string,
+    signature: string
+  ): Promise<void> {
+    const subject = `✅ Payment Confirmed - ${merchantName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+          .amount { font-size: 36px; font-weight: bold; color: #10b981; margin: 20px 0; text-align: center; }
+          .details { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          .detail-row { display: flex; justify-content: space-between; margin: 10px 0; }
+          .label { font-weight: bold; color: #666; }
+          .value { color: #333; font-family: monospace; }
+          .success-badge { background: #10b981; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin: 20px 0; }
+          .footer { text-align: center; color: #999; font-size: 12px; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Payment Confirmed!</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${customerName},</p>
+            <p>Your payment has been successfully processed and confirmed on the blockchain!</p>
+            
+            <div class="amount">${amount} ${token}</div>
+            
+            <div class="success-badge">✅ Payment Complete</div>
+            
+            <div class="details">
+              <div class="detail-row">
+                <span class="label">Merchant:</span>
+                <span class="value">${merchantName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Amount:</span>
+                <span class="value">${amount} ${token}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Transaction:</span>
+                <span class="value">${signature.slice(0, 16)}...</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Network:</span>
+                <span class="value">Solana Devnet</span>
+              </div>
+            </div>
+            
+            <p>Your purchase is confirmed and ${merchantName} has been notified. Thank you for your payment!</p>
+            
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">
+              <strong>Transaction ID:</strong><br/>
+              <span style="word-break: break-all; font-family: monospace;">${signature}</span>
+            </p>
+            
+            <div class="footer">
+              <p>Powered by Solana Payment Autopilot</p>
+              <p>Fast, secure cryptocurrency payments</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const success = await this.sendEmail({
+      to: customerEmail,
+      subject,
+      html,
+    });
+
+    if (success) {
+      await this.logNotification(
+        customerEmail,
+        'payment_confirmation',
+        subject,
+        'email',
+        'sent'
+      );
+    }
+  }
+
+  /**
    * Send conversion completed notification
    */
   async sendConversionNotification(

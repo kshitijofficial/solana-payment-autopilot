@@ -177,9 +177,21 @@ export class PaymentMonitorV2 extends EventEmitter {
               webhookService.sendPaymentWebhook(paymentRequest, saved)
                 .catch(err => logger.error('Failed to send webhook', err));
             }
+
+            // Send customer confirmation email
+            if (paymentRequest.customer_email) {
+              emailService.sendCustomerPaymentConfirmation(
+                paymentRequest.customer_email,
+                paymentRequest.customer_name || 'Customer',
+                amountSOL,
+                'SOL',
+                merchant.business_name,
+                signature
+              ).catch(err => logger.error('Failed to send customer email', err));
+            }
           }
 
-          // Send email notification
+          // Send merchant email notification
           if (merchant.notification_email) {
             emailService.sendPaymentNotification(
               merchant.notification_email,
