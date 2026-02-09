@@ -361,7 +361,7 @@
                 </div>
 
                 <div class="price-section">
-                    <div class="price">$50 <span class="crypto-badge">Or pay with SOL</span></div>
+                    <div class="price">$1 <span class="crypto-badge">Or pay with SOL</span></div>
                     <div class="price-description">One-time payment • Instant access • No subscription</div>
                 </div>
 
@@ -473,7 +473,7 @@
         async function payCrypto() {
             try {
                 await autopilot.createPayment({
-                    amount: 50,
+                    amount: 1,
                     orderId: 'COURSE-' + Date.now(),
                     customerEmail: prompt('Enter your email for course access:') || 'student@example.com',
                     description: 'Blockchain Mastery Course - Lifetime Access',
