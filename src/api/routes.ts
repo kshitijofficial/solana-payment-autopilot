@@ -267,7 +267,21 @@ router.get('/payment-requests/:paymentId', async (req: Request, res: Response) =
       });
     }
 
-    res.json({ success: true, data: paymentRequest });
+    // Fetch merchant wallet address
+    const { data: merchant } = await db.getClient()
+      .from('merchants')
+      .select('wallet_address, business_name')
+      .eq('id', paymentRequest.merchant_id)
+      .single();
+
+    // Add wallet address to response
+    const responseData = {
+      ...paymentRequest,
+      wallet_address: merchant?.wallet_address || null,
+      merchant_name: merchant?.business_name || null,
+    };
+
+    res.json({ success: true, data: responseData });
   } catch (error) {
     logger.error('Failed to get payment request', error);
     res.status(500).json({ success: false, error: 'Failed to get payment request' });
