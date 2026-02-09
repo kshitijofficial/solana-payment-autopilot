@@ -14,13 +14,17 @@ export interface EmailOptions {
 
 export class EmailService {
   private apiKey: string;
-  private fromEmail: string = 'Solana Payment Autopilot <noreply@paymentautopilot.com>';
+  private fromEmail: string;
 
   constructor() {
     this.apiKey = process.env.RESEND_API_KEY || '';
+    this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    
     if (!this.apiKey) {
       logger.warn('RESEND_API_KEY not set - email notifications disabled');
     }
+    
+    logger.info(`📧 Email service initialized with sender: ${this.fromEmail}`);
   }
 
   /**
