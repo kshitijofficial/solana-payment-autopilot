@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Signup - Solana Payment Autopilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <nav class="bg-white shadow-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                        ☄️ Solana Payment Autopilot
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-1">Accept crypto payments with zero technical knowledge</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <!-- Hero -->
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Start Accepting Crypto Payments</h2>
+            <p class="text-xl text-gray-600 mb-2">One-time setup fee: <span class="font-bold text-blue-600">0.1 SOL</span></p>
+            <p class="text-sm text-gray-500">(~$15 at current prices)</p>
+        </div>
+
+        <!-- Features -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="text-4xl mb-3">⚡</div>
+                <h3 class="font-bold text-lg mb-2">Instant Setup</h3>
+                <p class="text-sm text-gray-600">Get your merchant account in seconds. No paperwork, no waiting.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="text-4xl mb-3">🤖</div>
+                <h3 class="font-bold text-lg mb-2">Autonomous Agent</h3>
+                <p class="text-sm text-gray-600">AI agent monitors payments 24/7. Auto-converts to stablecoin.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="text-4xl mb-3">💰</div>
+                <h3 class="font-bold text-lg mb-2">Low Fees</h3>
+                <p class="text-sm text-gray-600">0.1 SOL one-time fee. No monthly charges. No hidden costs.</p>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" class="bg-white rounded-2xl shadow-xl p-8">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Create Your Merchant Account</h3>
+            
+            <form onsubmit="handleSignup(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Business Name *</label>
+                    <input 
+                        type="text"
+                        id="businessName"
+                        required
+                        placeholder="Joe's Coffee Shop"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <input 
+                        type="email"
+                        id="email"
+                        required
+                        placeholder="joe@coffeeshop.com"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">We'll send your merchant credentials here</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Website (Optional)</label>
+                    <input 
+                        type="url"
+                        id="website"
+                        placeholder="https://coffeeshop.com"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-900">What happens next:</p>
+                            <ol class="text-sm text-blue-800 mt-2 space-y-1 list-decimal list-inside">
+                                <li>You'll pay 0.1 SOL to our platform wallet</li>
+                                <li>Your merchant account is created automatically</li>
+                                <li>You'll receive your merchant ID and integration guide</li>
+                                <li>Start accepting payments immediately!</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <button 
+                    type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 font-bold text-lg transition-all shadow-lg"
+                >
+                    Continue to Payment →
+                </button>
+            </form>
+        </div>
+
+        <!-- Payment Screen (Hidden Initially) -->
+        <div id="paymentScreen" class="hidden bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Pay Setup Fee</h3>
+                <p class="text-gray-600">Send <span class="font-bold text-blue-600">0.1 SOL</span> to complete registration</p>
+            </div>
+
+            <!-- QR Code -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200 mb-4">
+                    <img id="qrCodeImage" src="" alt="Payment QR Code" class="w-64 h-64 rounded-lg" />
+                </div>
+                <p class="text-sm font-semibold text-gray-700 mb-2">Scan with Phantom Wallet</p>
+                <p class="text-xs text-gray-500">Devnet SOL</p>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="bg-gray-50 rounded-xl p-6 space-y-3 mb-6">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Amount:</span>
+                    <span class="font-mono font-semibold">0.1 SOL</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Business:</span>
+                    <span class="font-semibold" id="businessNameDisplay"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Email:</span>
+                    <span class="font-mono" id="emailDisplay"></span>
+                </div>
+            </div>
+
+            <!-- Platform Address -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Or send manually to:</label>
+                <div class="flex items-center gap-2">
+                    <input 
+                        type="text"
+                        id="platformAddress"
+                        readonly
+                        value="ENS38RJ3AUJLsyUkEsbHKKnqQppkdsUowuSBui3QVFpb"
+                        class="flex-1 font-mono text-sm bg-white border-2 border-gray-300 rounded-lg px-4 py-3"
+                    />
+                    <button 
+                        onclick="copyAddress()"
+                        class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div id="paymentStatus" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded flex items-center gap-3">
+                <svg class="animate-spin h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div>
+                    <p class="text-sm font-semibold text-yellow-900">Waiting for payment...</p>
+                    <p class="text-xs text-yellow-700">Send 0.1 SOL to the address above</p>
+                </div>
+            </div>
+
+            <button 
+                onclick="goBack()"
+                class="w-full mt-6 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-semibold"
+            >
+                ← Back to Form
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const PLATFORM_WALLET = 'ENS38RJ3AUJLsyUkEsbHKKnqQppkdsUowuSBui3QVFpb';
+        const SIGNUP_FEE = 0.1;
+
+        let signupData = {};
+        let pollInterval = null;
+
+        async function handleSignup(event) {
+            event.preventDefault();
+
+            const businessName = document.getElementById('businessName').value;
+            const email = document.getElementById('email').value;
+            const website = document.getElementById('website').value;
+
+            signupData = { businessName, email, website };
+
+            // Generate QR code for payment
+            try {
+                const res = await fetch(`${API_BASE}/payments/qr`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        wallet_address: PLATFORM_WALLET,
+                        amount: SIGNUP_FEE,
+                        label: `Merchant Signup - ${businessName}`
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('qrCodeImage').src = data.data.qr_code;
+                    document.getElementById('businessNameDisplay').textContent = businessName;
+                    document.getElementById('emailDisplay').textContent = email;
+
+                    // Show payment screen
+                    document.getElementById('signupForm').classList.add('hidden');
+                    document.getElementById('paymentScreen').classList.remove('hidden');
+
+                    // Start polling for payment
+                    startPaymentPolling();
+                } else {
+                    showToast('Failed to generate payment QR', 'error');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showToast('Failed to process signup', 'error');
+            }
+        }
+
+        function startPaymentPolling() {
+            // Poll every 5 seconds
+            pollInterval = setInterval(checkPayment, 5000);
+        }
+
+        async function checkPayment() {
+            try {
+                // Check if payment was received
+                const res = await fetch(`${API_BASE}/signup/check-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        platform_wallet: PLATFORM_WALLET,
+                        expected_amount: SIGNUP_FEE,
+                        business_name: signupData.businessName,
+                        email: signupData.email,
+                        website: signupData.website
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success && data.data.payment_confirmed) {
+                    clearInterval(pollInterval);
+                    
+                    // Payment confirmed! Redirect to success page
+                    window.location.href = `success.html?merchant_id=${data.data.merchant_id}`;
+                }
+            } catch (error) {
+                console.error('Payment check error:', error);
+            }
+        }
+
+        function copyAddress() {
+            const address = document.getElementById('platformAddress').value;
+            navigator.clipboard.writeText(address);
+            showToast('Address copied!');
+        }
+
+        function goBack() {
+            clearInterval(pollInterval);
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('paymentScreen').classList.add('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden', 'bg-green-600', 'bg-red-600');
+            toast.classList.add(type === 'error' ? 'bg-red-600' : 'bg-green-600');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>
