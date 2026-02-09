@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, QrCode, TrendingUp, DollarSign, Plus, RefreshCw, ExternalLink, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Wallet, TrendingUp, DollarSign, RefreshCw, ExternalLink, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 const API = 'http://localhost:3000/api';
 
@@ -8,15 +8,8 @@ export default function App() {
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [conversions, setConversions] = useState({});
-  const [qrCode, setQrCode] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Form states
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newMerchant, setNewMerchant] = useState({ business_name: '', email: '' });
-  const [qrAmount, setQrAmount] = useState('0.05');
-  const [qrLabel, setQrLabel] = useState('Payment');
   
   // Filter states
   const [filterStatus, setFilterStatus] = useState('all');
@@ -83,65 +76,6 @@ export default function App() {
       selectedMerchant && loadTransactions(selectedMerchant.id)
     ]);
     setTimeout(() => setRefreshing(false), 500);
-  };
-
-  const createMerchant = async (e) => {
-    e.preventDefault();
-    if (!newMerchant.business_name || !newMerchant.email) {
-      alert('Please fill in all fields');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/merchants`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMerchant)
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setNewMerchant({ business_name: '', email: '' });
-        setShowCreateForm(false);
-        loadMerchants();
-        // Show success notification
-        alert(`✅ Merchant created!\n\nWallet: ${data.data.wallet_address}\n\nYou can now accept payments.`);
-      } else {
-        alert('Failed to create merchant: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Failed to create merchant:', error);
-      alert('Failed to create merchant');
-    }
-  };
-
-  const generateQR = async () => {
-    if (!selectedMerchant) {
-      alert('Please select a merchant first');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/payments/qr`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          wallet_address: selectedMerchant.wallet_address,
-          amount: qrAmount,
-          label: qrLabel || selectedMerchant.business_name
-        })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setQrCode(data.data.qr_code);
-      } else {
-        alert('Failed to generate QR code');
-      }
-    } catch (error) {
-      console.error('Failed to generate QR:', error);
-      alert('Failed to generate QR code');
-    }
   };
 
   const totalAmount = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
@@ -257,19 +191,24 @@ export default function App() {
         {merchants.length === 0 ? (
           /* Welcome Screen */
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <div className="text-8xl mb-6">🚀</div>
-            <h2 className="text-3xl font-bold mb-4">Welcome to Solana Payment Autopilot</h2>
+            <div className="text-8xl mb-6">🏢</div>
+            <h2 className="text-3xl font-bold mb-4">Platform Admin Panel</h2>
             <p className="text-gray-600 mb-8 text-lg">
-              Accept crypto payments without technical expertise.<br />
-              Create your first merchant account to get started.
+              No merchants registered yet.<br />
+              Merchants can sign up at: <span className="font-mono text-blue-600">http://localhost:8888</span>
             </p>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all text-lg font-semibold shadow-lg"
-            >
-              <Plus size={24} />
-              Create Merchant Account
-            </button>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded text-left max-w-xl mx-auto">
+              <p className="text-sm text-blue-900 mb-2">
+                <strong>How merchants join:</strong>
+              </p>
+              <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                <li>Visit the signup page (port 8888)</li>
+                <li>Fill in business details</li>
+                <li>Pay 0.1 SOL setup fee</li>
+                <li>Account created automatically</li>
+                <li>Appears here in admin panel!</li>
+              </ol>
+            </div>
           </div>
         ) : (
           <>
@@ -299,22 +238,17 @@ export default function App() {
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">Active Merchant</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Select Merchant to View</h2>
                   {selectedMerchant && (
                     <p className="text-sm text-gray-500 mt-1">
-                      👤 Viewing as: <span className="font-semibold text-blue-600">{selectedMerchant.business_name}</span>
+                      👤 Viewing: <span className="font-semibold text-blue-600">{selectedMerchant.business_name}</span>
                     </p>
                   )}
                 </div>
-                {!showCreateForm && (
-                  <button
-                    onClick={() => setShowCreateForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    <Plus size={16} />
-                    New Merchant
-                  </button>
-                )}
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-700">Total Merchants</p>
+                  <p className="text-2xl font-bold text-blue-600">{merchants.length}</p>
+                </div>
               </div>
               
               <select 
@@ -348,95 +282,32 @@ export default function App() {
               )}
             </div>
 
-            {/* Create Merchant Form */}
-            {showCreateForm && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-2 border-blue-200">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <Plus size={24} className="text-blue-600" />
-                    Create New Merchant
-                  </h2>
-                  <button
-                    onClick={() => setShowCreateForm(false)}
-                    className="text-gray-500 hover:text-gray-700 text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <form onSubmit={createMerchant} className="space-y-4">
-                  <input 
-                    type="text"
-                    placeholder="Business Name (e.g., Joe's Coffee Shop)"
-                    value={newMerchant.business_name}
-                    onChange={(e) => setNewMerchant({...newMerchant, business_name: e.target.value})}
-                    className="border-2 border-gray-300 rounded-lg px-4 py-3 w-full focus:border-blue-500 focus:outline-none transition-colors"
-                  />
-                  <input 
-                    type="email"
-                    placeholder="Email Address"
-                    value={newMerchant.email}
-                    onChange={(e) => setNewMerchant({...newMerchant, email: e.target.value})}
-                    className="border-2 border-gray-300 rounded-lg px-4 py-3 w-full focus:border-blue-500 focus:outline-none transition-colors"
-                  />
-                  <button 
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all shadow-lg"
-                  >
-                    Create Merchant Account
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* QR Code Generator */}
+            {/* Merchant Info Banner */}
             {selectedMerchant && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <QrCode size={24} className="text-blue-600" />
-                  Generate Payment QR Code
-                </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Amount (SOL)</label>
-                      <input 
-                        type="number"
-                        step="0.001"
-                        value={qrAmount}
-                        onChange={(e) => setQrAmount(e.target.value)}
-                        placeholder="0.05"
-                        className="border-2 border-gray-300 rounded-lg px-4 py-3 w-full focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Label (Optional)</label>
-                      <input 
-                        type="text"
-                        value={qrLabel}
-                        onChange={(e) => setQrLabel(e.target.value)}
-                        placeholder={selectedMerchant.business_name}
-                        className="border-2 border-gray-300 rounded-lg px-4 py-3 w-full focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <button 
-                      onClick={generateQR}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all shadow-lg"
-                    >
-                      Generate QR Code
-                    </button>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Merchant Details</h3>
+                    <p className="text-sm text-gray-600">Registered merchant information and stats</p>
                   </div>
-                  
-                  {qrCode && (
-                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Scan with Phantom Wallet (Devnet)</p>
-                      <img src={qrCode} alt="Payment QR Code" className="w-64 h-64 rounded-lg shadow-md" />
-                      <p className="text-xs text-gray-600 mt-3 text-center">
-                        <span className="font-mono bg-white px-2 py-1 rounded">{qrAmount} SOL</span>
-                        <br />
-                        {qrLabel || selectedMerchant.business_name}
-                      </p>
-                    </div>
-                  )}
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">Registered</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {new Date(selectedMerchant.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Email</p>
+                    <p className="text-sm font-semibold text-gray-900">{selectedMerchant.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Auto-Convert</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedMerchant.auto_convert_enabled ? '✅ Enabled' : '❌ Disabled'}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
