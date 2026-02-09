@@ -2,8 +2,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { encodeURL, createQR } from '@solana/pay';
+import { encodeURL } from '@solana/pay';
 import BigNumber from 'bignumber.js';
+import QRCode from 'qrcode';
 import { db, PaymentRequest } from '../database/supabase';
 import { logger } from '../utils/logger';
 
@@ -108,17 +109,17 @@ export class PaymentRequestService {
         message,
       });
 
-      // Generate QR code
-      const qr = createQR(url, QR_SIZE);
-      const qrBuffer = await qr.getRawData('png');
-      
-      if (!qrBuffer) {
-        throw new Error('Failed to generate QR code');
-      }
+      // Generate QR code using Node.js qrcode library
+      const qrDataUrl = await QRCode.toDataURL(url.toString(), {
+        width: QR_SIZE,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
 
-      // Convert to base64
-      const base64 = qrBuffer.toString('base64');
-      return `data:image/png;base64,${base64}`;
+      return qrDataUrl; // Already in data:image/png;base64,... format
     } catch (error) {
       logger.error('Failed to generate QR code', error);
       throw error;
