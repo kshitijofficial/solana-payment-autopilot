@@ -33,7 +33,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.29.0",
     "@jup-ag/api": "^6.0.0",
-    "@solana/pay": "^0.2.5",
+    "@solana/pay": "^0.2.6",
     "@solana/spl-token": "^0.4.1",
     "@solana/web3.js": "^1.91.0",
     "@supabase/supabase-js": "^2.95.3",

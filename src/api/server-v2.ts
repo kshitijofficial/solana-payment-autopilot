@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import * as dotenv from 'dotenv';
 import { logger } from '../utils/logger';
 import routes from './routes';
@@ -20,6 +21,25 @@ app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`);
   next();
 });
+
+// Serve checkout page
+app.get('/pay/:paymentId', (req, res) => {
+  const checkoutPath = path.join(__dirname, '../../checkout/index.html');
+  res.sendFile(checkoutPath);
+});
+
+// Serve static files from checkout directory
+app.use('/checkout', express.static(path.join(__dirname, '../../checkout')));
+
+// Serve SDK
+app.use('/sdk', express.static(path.join(__dirname, '../../sdk')));
+
+// Serve demo site
+app.get('/demo', (req, res) => {
+  const demoPath = path.join(__dirname, '../../demo/index.html');
+  res.sendFile(demoPath);
+});
+app.use('/demo', express.static(path.join(__dirname, '../../demo')));
 
 // Routes
 app.use('/api', routes);

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Mastery Course - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: -100px auto 40px;
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .course-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+
+        .course-content {
+            padding: 40px;
+        }
+
+        .course-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .course-description {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+        }
+
+        .feature-text {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .price-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .price-description {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pay-button {
+            flex: 1;
+            min-width: 200px;
+            padding: 18px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pay-crypto {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .pay-crypto:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-card {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .pay-card:hover {
+            background: #f5f7fa;
+        }
+
+        .crypto-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .benefits {
+            margin-top: 40px;
+        }
+
+        .benefits h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .benefit-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .benefit-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .benefit-text {
+            color: #666;
+        }
+
+        .testimonials {
+            background: #f8f9fa;
+            padding: 60px 20px;
+            margin-top: 40px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: #333;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .modal-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .course-title {
+                font-size: 24px;
+            }
+
+            .price {
+                font-size: 36px;
+            }
+
+            .payment-options {
+                flex-direction: column;
+            }
+
+            .pay-button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>🚀 Blockchain Mastery Course</h1>
+        <p>Master Web3 development from scratch. Build real projects. Get hired.</p>
+        <div style="font-size: 14px; opacity: 0.8; margin-top: 10px;">
+            ⚡ Pay with crypto and get instant access
+        </div>
+    </div>
+
+    <!-- Course Card -->
+    <div class="container">
+        <div class="course-card">
+            <div class="course-image">
+                🎓
+            </div>
+            <div class="course-content">
+                <h2 class="course-title">Complete Blockchain Development Bootcamp</h2>
+                <p class="course-description">
+                    Learn to build decentralized applications on Solana, Ethereum, and other blockchains. 
+                    This comprehensive course covers everything from basics to advanced topics.
+                </p>
+
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-text">50+ Video Lessons</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">💻</div>
+                        <div class="feature-text">10 Real Projects</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-text">Lifetime Access</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-text">Certificate</div>
+                    </div>
+                </div>
+
+                <div class="price-section">
+                    <div class="price">$50 <span class="crypto-badge">Or pay with SOL</span></div>
+                    <div class="price-description">One-time payment • Instant access • No subscription</div>
+                </div>
+
+                <div class="payment-options">
+                    <button class="pay-button pay-crypto" onclick="payCrypto()">
+                        ☄️ Pay with Crypto
+                    </button>
+                    <button class="pay-button pay-card" onclick="payCard()">
+                        💳 Pay with Card
+                    </button>
+                </div>
+
+                <div class="benefits">
+                    <h3>What you'll learn:</h3>
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <div class="benefit-icon">✅</div>
+                            <div class="benefit-text">
+                                <strong>Solana Development:</strong> Build smart contracts with Rust and Anchor
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">✅</div>
+                            <div class="benefit-text">
+                                <strong>Web3 Integration:</strong> Connect your dApps to wallets and blockchain
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">✅</div>
+                            <div class="benefit-text">
+                                <strong>Real Projects:</strong> Build NFT marketplaces, DEX, DeFi protocols
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">✅</div>
+                            <div class="benefit-text">
+                                <strong>Career Ready:</strong> Get hired as a blockchain developer
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="testimonials">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 32px; margin-bottom: 20px;">What Students Say</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <div class="testimonial-text">
+                        "Best blockchain course I've ever taken. The projects are real-world and the instruction is clear."
+                    </div>
+                    <div class="testimonial-author">— Sarah K., Web3 Developer</div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-text">
+                        "Paying with crypto was so easy! Got instant access and started learning immediately."
+                    </div>
+                    <div class="testimonial-author">— Mike T., Student</div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-text">
+                        "Landed my first blockchain job 2 months after completing this course. Worth every penny."
+                    </div>
+                    <div class="testimonial-author">— Alex R., Blockchain Engineer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2026 Blockchain Mastery Course • Demo Site for Solana Payment Autopilot</p>
+        <p style="margin-top: 10px; opacity: 0.8; font-size: 14px;">
+            Powered by Solana Payment Autopilot
+        </p>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">✅</div>
+            <h2>Payment Successful!</h2>
+            <p>You now have lifetime access to the Blockchain Mastery Course.</p>
+            <button class="modal-button" onclick="closeModal()">Start Learning</button>
+        </div>
+    </div>
+
+    <!-- SDK Script -->
+    <script src="../sdk/solana-autopilot.js"></script>
+
+    <script>
+        // Configuration - Replace with your actual merchant ID
+        const MERCHANT_ID = 'REPLACE_WITH_YOUR_MERCHANT_ID';
+        const API_BASE = 'http://localhost:3000';
+
+        // Initialize SDK
+        const autopilot = new SolanaAutopilot({
+            merchantId: MERCHANT_ID,
+            apiBase: API_BASE,
+            onSuccess: handlePaymentSuccess,
+            onError: handlePaymentError,
+            onCancel: handlePaymentCancel
+        });
+
+        // Handle crypto payment
+        async function payCrypto() {
+            try {
+                await autopilot.createPayment({
+                    amount: 50,
+                    orderId: 'COURSE-' + Date.now(),
+                    customerEmail: prompt('Enter your email for course access:') || 'student@example.com',
+                    description: 'Blockchain Mastery Course - Lifetime Access',
+                    callbackUrl: window.location.origin + '/webhook'
+                });
+            } catch (error) {
+                alert('Payment failed: ' + error.message);
+            }
+        }
+
+        // Handle card payment (demo - not implemented)
+        function payCard() {
+            alert('Card payments coming soon! For this demo, please use crypto payment.');
+        }
+
+        // Payment success callback
+        function handlePaymentSuccess(payment) {
+            console.log('Payment successful:', payment);
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Payment error callback
+        function handlePaymentError(error) {
+            console.error('Payment error:', error);
+            alert('Payment failed. Please try again or contact support.');
+        }
+
+        // Payment cancel callback
+        function handlePaymentCancel() {
+            console.log('Payment cancelled');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+            // In a real app, redirect to course content
+            alert('Redirecting to course dashboard...');
+        }
+
+        // Check URL for merchant ID
+        window.addEventListener('DOMContentLoaded', () => {
+            if (MERCHANT_ID === 'REPLACE_WITH_YOUR_MERCHANT_ID') {
+                console.warn('⚠️  Replace MERCHANT_ID in demo/index.html with your actual merchant ID');
+            }
+        });
+    </script>
+</body>
+</html>

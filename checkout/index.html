@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Payment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .amount-box {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+        }
+
+        .amount-usd {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .amount-sol {
+            font-size: 20px;
+            color: #666;
+        }
+
+        .sol-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .qr-code {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 10px;
+            background: white;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .status.paid {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .status.expired {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .timer {
+            text-align: center;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .timer-text {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .wallet-address {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☄️ Solana Payment</h1>
+            <p>Secure cryptocurrency payment powered by Solana</p>
+        </div>
+
+        <div class="content" id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading payment details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get payment ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id') || window.location.pathname.split('/').pop();
+        const API_BASE = window.location.origin;
+
+        let paymentData = null;
+        let pollInterval = null;
+        let timerInterval = null;
+
+        // Load payment request
+        async function loadPayment() {
+            try {
+                const response = await fetch(`${API_BASE}/api/payment-requests/${paymentId}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    showError('Payment request not found');
+                    return;
+                }
+
+                paymentData = result.data;
+                renderPayment();
+                startPolling();
+                startTimer();
+            } catch (error) {
+                showError('Failed to load payment details');
+                console.error(error);
+            }
+        }
+
+        // Render payment UI
+        function renderPayment() {
+            const status = paymentData.status;
+
+            if (status === 'paid') {
+                renderSuccess();
+                return;
+            }
+
+            if (status === 'expired') {
+                renderExpired();
+                return;
+            }
+
+            // Render pending payment
+            document.getElementById('content').innerHTML = `
+                <div class="status pending">
+                    ⏳ Waiting for payment...
+                </div>
+
+                <div class="timer" id="timer">
+                    <div class="timer-text">Time remaining</div>
+                    <div class="timer-value" id="timer-value">--:--</div>
+                </div>
+
+                <div class="amount-box">
+                    <div class="amount-usd">$${paymentData.amount_usd.toFixed(2)}</div>
+                    <div class="amount-sol">
+                        <span class="sol-badge">${paymentData.amount_sol} SOL</span>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <img src="${paymentData.qr_code_data}" alt="QR Code" class="qr-code" id="qr-code">
+                </div>
+
+                <div class="instructions">
+                    <h3>📱 How to pay:</h3>
+                    <ol>
+                        <li>Open your Solana wallet (Phantom, Solflare, etc.)</li>
+                        <li>Scan the QR code above</li>
+                        <li>Confirm the transaction</li>
+                        <li>Wait for confirmation (~15 seconds)</li>
+                    </ol>
+                </div>
+
+                ${paymentData.description ? `
+                    <div style="text-align: center; color: #666; margin-bottom: 20px;">
+                        ${paymentData.description}
+                    </div>
+                ` : ''}
+
+                <div class="wallet-address">
+                    <strong>Merchant Wallet:</strong><br>
+                    ${paymentData.merchant_id}
+                </div>
+            `;
+        }
+
+        // Render success state
+        function renderSuccess() {
+            stopPolling();
+            stopTimer();
+
+            document.getElementById('content').innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div class="success-icon">✅</div>
+                    <h2 style="margin-bottom: 10px; color: #28a745;">Payment Successful!</h2>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Your payment of <strong>$${paymentData.amount_usd.toFixed(2)}</strong> has been confirmed.
+                    </p>
+                    <div class="status paid">
+                        ✓ Transaction confirmed on Solana blockchain
+                    </div>
+                    ${paymentData.customer_email ? `
+                        <p style="margin-top: 20px; color: #666;">
+                            A confirmation email has been sent to:<br>
+                            <strong>${paymentData.customer_email}</strong>
+                        </p>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Render expired state
+        function renderExpired() {
+            stopPolling();
+            stopTimer();
+
+            document.getElementById('content').innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">⏰</div>
+                    <h2 style="margin-bottom: 10px; color: #dc3545;">Payment Expired</h2>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        This payment request has expired.
+                    </p>
+                    <div class="status expired">
+                        This link is no longer valid
+                    </div>
+                    <button class="button" onclick="window.location.reload()">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    <h3 style="margin-bottom: 10px;">❌ Error</h3>
+                    <p>${message}</p>
+                    <button class="button" onclick="window.location.reload()" style="margin-top: 20px;">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+
+        // Poll for payment status
+        function startPolling() {
+            pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/api/payment-requests/${paymentId}`);
+                    const result = await response.json();
+
+                    if (result.success && result.data.status !== paymentData.status) {
+                        paymentData = result.data;
+                        renderPayment();
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        // Timer countdown
+        function startTimer() {
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimer() {
+            if (!paymentData) return;
+
+            const now = Date.now();
+            const expiresAt = new Date(paymentData.expires_at).getTime();
+            const remaining = expiresAt - now;
+
+            if (remaining <= 0) {
+                paymentData.status = 'expired';
+                renderPayment();
+                return;
+            }
+
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            const timerValue = document.getElementById('timer-value');
+            
+            if (timerValue) {
+                timerValue.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        // Load payment on page load
+        loadPayment();
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            stopPolling();
+            stopTimer();
+        });
+    </script>
+</body>
+</html>
