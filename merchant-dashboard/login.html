@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Login - Solana Payment Autopilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+                ☄️ Solana Payment Autopilot
+            </h1>
+            <p class="text-gray-600">Merchant Dashboard</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+            <p class="text-gray-600 mb-6">Login to access your merchant dashboard</p>
+
+            <!-- Login Form -->
+            <form onsubmit="handleLogin(event)" id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                    <input 
+                        type="email"
+                        id="email"
+                        required
+                        placeholder="joe@coffeeshop.com"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Merchant ID</label>
+                    <input 
+                        type="text"
+                        id="merchantId"
+                        required
+                        placeholder="Enter your merchant ID"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors font-mono text-sm"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">Find this in your welcome email</p>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <p class="text-sm text-red-800" id="errorText"></p>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit"
+                    id="loginButton"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all shadow-lg"
+                >
+                    Login to Dashboard
+                </button>
+            </form>
+
+            <!-- Help Text -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-600 text-center mb-3">Don't have an account?</p>
+                <a 
+                    href="../signup/index.html"
+                    class="block text-center text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                >
+                    Sign Up for New Merchant Account →
+                </a>
+            </div>
+
+            <!-- Info Box -->
+            <div class="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p class="text-xs text-blue-900">
+                    <strong>📧 First time?</strong> Check your email for your Merchant ID. It was sent when you registered.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-sm text-gray-600">
+            <p>© 2026 Solana Payment Autopilot</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const session = getSession();
+            if (session) {
+                // Already logged in, redirect to dashboard
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const merchantId = document.getElementById('merchantId').value.trim();
+            const loginButton = document.getElementById('loginButton');
+
+            // Disable button
+            loginButton.disabled = true;
+            loginButton.textContent = 'Verifying...';
+            hideError();
+
+            try {
+                // Verify merchant exists
+                const response = await fetch(`${API_BASE}/merchants`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    showError('Failed to connect to server. Please try again.');
+                    return;
+                }
+
+                // Find merchant by ID and email
+                const merchant = data.data.find(m => 
+                    m.id === merchantId && m.email.toLowerCase() === email.toLowerCase()
+                );
+
+                if (!merchant) {
+                    showError('Invalid email or merchant ID. Please check your credentials.');
+                    return;
+                }
+
+                // Create session
+                const session = {
+                    merchantId: merchant.id,
+                    email: merchant.email,
+                    businessName: merchant.business_name,
+                    loginTime: new Date().toISOString()
+                };
+
+                // Save to localStorage
+                localStorage.setItem('merchantSession', JSON.stringify(session));
+
+                // Redirect to dashboard
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Connection error. Please check if the API server is running.');
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login to Dashboard';
+            }
+        }
+
+        function getSession() {
+            const sessionData = localStorage.getItem('merchantSession');
+            return sessionData ? JSON.parse(sessionData) : null;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -22,12 +22,20 @@
                     </h1>
                     <p class="text-sm text-gray-600 mt-1">Welcome back, <span id="businessName" class="font-semibold"></span></p>
                 </div>
-                <button onclick="refreshData()" id="refreshBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                    Refresh
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="refreshData()" id="refreshBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                    <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -184,20 +192,47 @@
     </div>
 
     <script>
-        // Configuration - Replace with actual merchant ID
-        const MERCHANT_ID = 'be87c918-36a4-4d59-9566-cad574c4e370'; // "check" merchant
         const API_BASE = 'http://localhost:3000/api';
 
+        let MERCHANT_ID = null;
         let merchant = null;
         let transactions = [];
         let conversions = {};
 
-        // Load merchant data on page load
+        // Check authentication and load merchant data on page load
         window.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const session = getSession();
+            
+            if (!session) {
+                // Not logged in, redirect to login page
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Set merchant ID from session
+            MERCHANT_ID = session.merchantId;
+
+            // Load merchant data
             loadMerchantData();
+            
             // Auto-refresh every 15 seconds
             setInterval(loadMerchantData, 15000);
         });
+
+        // Get session from localStorage
+        function getSession() {
+            const sessionData = localStorage.getItem('merchantSession');
+            return sessionData ? JSON.parse(sessionData) : null;
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('merchantSession');
+                window.location.href = 'login.html';
+            }
+        }
 
         async function loadMerchantData() {
             try {
