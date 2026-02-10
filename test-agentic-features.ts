@@ -7,21 +7,18 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// Load .env from current working directory
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+// Try multiple .env locations
+const envPath = path.join(process.cwd(), '.env');
+console.log(`Loading .env from: ${envPath}`);
+dotenv.config({ path: envPath });
+
+// Also try default
+dotenv.config();
+
+console.log(`ANTHROPIC_API_KEY loaded: ${!!process.env.ANTHROPIC_API_KEY}`);
 
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { db } from './src/database/supabase';
-
-// Check if API key exists before importing services
-const hasApiKey = !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY);
-
-if (!hasApiKey) {
-  console.error('\n❌ ERROR: ANTHROPIC_API_KEY not found in .env file');
-  console.error('Please add your Anthropic API key to .env:');
-  console.error('ANTHROPIC_API_KEY=sk-ant-api03-YOUR-KEY-HERE\n');
-  process.exit(1);
-}
 
 import { agenticConverter } from './src/services/AgenticConverter';
 import { merchantChatAgent } from './src/services/MerchantChatAgent';
