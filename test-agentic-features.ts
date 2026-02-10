@@ -7,8 +7,8 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// Load .env from project root
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Load .env from current working directory
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { db } from './src/database/supabase';
