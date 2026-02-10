@@ -23,6 +23,15 @@
                     <p class="text-sm text-gray-600 mt-1">Welcome back, <span id="businessName" class="font-semibold"></span></p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <!-- Network Toggle -->
+                    <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
+                        <button onclick="switchNetwork('devnet')" id="btn-devnet" class="px-3 py-2 rounded-md text-sm font-semibold transition-all bg-white shadow text-blue-600">
+                            🧪 Devnet
+                        </button>
+                        <button onclick="switchNetwork('mainnet')" id="btn-mainnet" class="px-3 py-2 rounded-md text-sm font-semibold transition-all text-gray-600 hover:bg-white/50">
+                            🌐 Mainnet
+                        </button>
+                    </div>
                     <button onclick="refreshData()" id="refreshBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -288,6 +297,7 @@
         let merchant = null;
         let transactions = [];
         let conversions = {};
+        let SELECTED_NETWORK = localStorage.getItem('selectedNetwork') || 'devnet';
 
         // Check authentication and load merchant data on page load
         window.addEventListener('DOMContentLoaded', () => {
@@ -304,6 +314,9 @@
             console.log('Session found:', session);
             // Set merchant ID from session
             MERCHANT_ID = session.merchantId;
+
+            // Initialize network toggle UI
+            updateNetworkToggle();
 
             // Load merchant data
             loadMerchantData();
@@ -327,6 +340,29 @@
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('merchantSession');
                 window.location.href = 'login.html';
+            }
+        }
+
+        // Switch network
+        function switchNetwork(network) {
+            SELECTED_NETWORK = network;
+            localStorage.setItem('selectedNetwork', network);
+            updateNetworkToggle();
+            loadMerchantData();
+            showToast(`Switched to ${network === 'mainnet' ? '🌐 Mainnet' : '🧪 Devnet'}`);
+        }
+
+        // Update network toggle UI
+        function updateNetworkToggle() {
+            const devnetBtn = document.getElementById('btn-devnet');
+            const mainnetBtn = document.getElementById('btn-mainnet');
+            
+            if (SELECTED_NETWORK === 'devnet') {
+                devnetBtn.className = 'px-3 py-2 rounded-md text-sm font-semibold transition-all bg-white shadow text-blue-600';
+                mainnetBtn.className = 'px-3 py-2 rounded-md text-sm font-semibold transition-all text-gray-600 hover:bg-white/50';
+            } else {
+                devnetBtn.className = 'px-3 py-2 rounded-md text-sm font-semibold transition-all text-gray-600 hover:bg-white/50';
+                mainnetBtn.className = 'px-3 py-2 rounded-md text-sm font-semibold transition-all bg-white shadow text-purple-600';
             }
         }
 
@@ -377,36 +413,53 @@
         }
 
         function updateUI() {
-            // Update stats
-            const totalAmount = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-            const totalConverted = Object.values(conversions).reduce((sum, conv) => sum + (conv.to_amount || 0), 0);
+            // Filter transactions by selected network
+            const filteredTxs = transactions.filter(tx => {
+                // If transaction doesn't have network field, assume devnet (backward compatibility)
+                const txNetwork = tx.network || 'devnet';
+                return txNetwork === SELECTED_NETWORK;
+            });
+
+            // Update stats (only for selected network)
+            const totalAmount = filteredTxs.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+            const filteredConversions = filteredTxs.map(tx => conversions[tx.id]).filter(c => c);
+            const totalConverted = filteredConversions.reduce((sum, conv) => sum + (conv.to_amount || 0), 0);
             
             document.getElementById('totalReceived').textContent = `${totalAmount.toFixed(4)} SOL`;
-            document.getElementById('totalTransactions').textContent = transactions.length;
+            document.getElementById('totalTransactions').textContent = filteredTxs.length;
             document.getElementById('totalConverted').textContent = totalConverted > 0 ? `$${totalConverted.toFixed(2)}` : `${totalAmount.toFixed(4)} SOL`;
 
             // Update transaction list
             const list = document.getElementById('transactionsList');
             
-            if (transactions.length === 0) {
+            if (filteredTxs.length === 0) {
+                const networkEmoji = SELECTED_NETWORK === 'mainnet' ? '🌐' : '🧪';
+                const networkName = SELECTED_NETWORK === 'mainnet' ? 'Mainnet' : 'Devnet';
                 list.innerHTML = `
                     <div class="text-center py-12 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl">
                         <div class="text-6xl mb-4">💳</div>
-                        <p class="text-gray-600 mb-2 text-lg font-medium">No transactions yet</p>
+                        <p class="text-gray-600 mb-2 text-lg font-medium">No ${networkEmoji} ${networkName} transactions yet</p>
                         <p class="text-sm text-gray-500 mb-4">Share your wallet address with customers to receive payments</p>
+                        ${SELECTED_NETWORK === 'devnet' ? `
                         <a href="https://faucet.solana.com" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                             </svg>
                             Get Devnet SOL from Faucet
                         </a>
+                        ` : '<p class="text-xs text-orange-600 font-semibold">⚠️ Mainnet uses real money</p>'}
                     </div>
                 `;
             } else {
-                list.innerHTML = transactions.map(tx => {
+                list.innerHTML = filteredTxs.map(tx => {
                     const conversion = conversions[tx.id];
                     const date = new Date(tx.created_at);
                     const statusColor = tx.status === 'confirmed' ? 'green' : 'yellow';
+                    const txNetwork = tx.network || 'devnet';
+                    const networkBadge = txNetwork === 'mainnet' 
+                        ? '<span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded">🌐 Mainnet</span>'
+                        : '<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">🧪 Devnet</span>';
+                    const solscanCluster = txNetwork === 'mainnet' ? '' : '?cluster=devnet';
                     
                     return `
                         <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
@@ -422,11 +475,14 @@
                                         <p class="text-xs text-gray-500">${date.toLocaleString()}</p>
                                     </div>
                                 </div>
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold border ${
-                                    tx.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                                }">
-                                    ${tx.status.toUpperCase()}
-                                </span>
+                                <div class="flex gap-2">
+                                    ${networkBadge}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold border ${
+                                        tx.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                    }">
+                                        ${tx.status.toUpperCase()}
+                                    </span>
+                                </div>
                             </div>
                             
                             <div class="space-y-2 text-sm">
@@ -442,7 +498,7 @@
                                 ` : ''}
                                 <div class="flex justify-between items-center pt-2 border-t border-gray-100">
                                     <span class="text-gray-600">Transaction:</span>
-                                    <a href="https://solscan.io/tx/${tx.signature}?cluster=devnet" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                                    <a href="https://solscan.io/tx/${tx.signature}${solscanCluster}" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
                                         View
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>

@@ -365,6 +365,15 @@
                     <div class="price-description">One-time payment • Instant access • No subscription</div>
                 </div>
 
+                <!-- Network Selector -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <label style="font-size: 14px; color: #666; margin-right: 10px;">Network:</label>
+                    <select id="networkSelect" style="padding: 8px 15px; border-radius: 8px; border: 2px solid #667eea; font-size: 14px; background: white; cursor: pointer;">
+                        <option value="devnet">🧪 Devnet (Test)</option>
+                        <option value="mainnet">🌐 Mainnet (Real Money)</option>
+                    </select>
+                </div>
+
                 <div class="payment-options">
                     <button class="pay-button pay-crypto" onclick="payCrypto()">
                         ☄️ Pay with Crypto
@@ -472,12 +481,21 @@
         // Handle crypto payment
         async function payCrypto() {
             try {
+                const selectedNetwork = document.getElementById('networkSelect').value;
+                
+                // Show warning for mainnet
+                if (selectedNetwork === 'mainnet') {
+                    const confirmed = confirm('⚠️ MAINNET WARNING\n\nYou are about to make a payment with REAL MONEY.\n\nTest thoroughly on Devnet first!\n\nContinue?');
+                    if (!confirmed) return;
+                }
+                
                 await autopilot.createPayment({
                     amount: 1,
                     orderId: 'COURSE-' + Date.now(),
                     customerEmail: prompt('Enter your email for course access:') || 'student@example.com',
                     description: 'Blockchain Mastery Course - Lifetime Access',
-                    callbackUrl: window.location.origin + '/webhook'
+                    callbackUrl: window.location.origin + '/webhook',
+                    network: selectedNetwork
                 });
             } catch (error) {
                 alert('Payment failed: ' + error.message);
