@@ -510,6 +510,76 @@
                 toast.classList.add('hidden');
             }, 3000);
         }
+
+        // Chat widget functions
+        function toggleChat() {
+            const widget = document.getElementById('chatWidget');
+            widget.classList.toggle('hidden');
+            if (!widget.classList.contains('hidden')) {
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            const sendBtn = document.getElementById('chatSendBtn');
+            sendBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/agent/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ merchant_id: MERCHANT_ID, message })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    addChatMessage(data.data.reply, 'agent');
+                } else {
+                    addChatMessage('Sorry, error occurred.', 'agent');
+                }
+            } catch (error) {
+                addChatMessage('Connection error.', 'agent');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function addChatMessage(text, sender) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'text-right' : 'text-left';
+            div.innerHTML = `<div class="inline-block max-w-xs p-3 rounded-lg ${sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}">${text}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
     </script>
+
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="hidden fixed bottom-20 right-6 w-96 bg-white rounded-lg shadow-2xl" style="max-height: 500px; display: flex; flex-direction: column;">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+            <span class="font-semibold">🤖 Chat with Agent</span>
+            <button onclick="toggleChat()" class="text-white hover:text-gray-200">✕</button>
+        </div>
+        <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-2" style="max-height: 350px;">
+            <div class="text-left">
+                <div class="inline-block max-w-xs p-3 rounded-lg bg-gray-100 text-gray-900">Hi! Ask me anything about your payments.</div>
+            </div>
+        </div>
+        <div class="p-3 border-t flex gap-2">
+            <input id="chatInput" type="text" placeholder="Type a message..." class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button id="chatSendBtn" onclick="sendChatMessage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Send</button>
+        </div>
+    </div>
+
+    <!-- Chat Button -->
+    <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl">
+        💬
+    </button>
 </body>
 </html>
