@@ -2,7 +2,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import { db } from '../database/supabase';
-import { conversionService } from '../services/ConversionService';
+import { agenticConversionService } from '../services/AgenticConversionService';
 import { emailService } from '../services/EmailService';
 import { webhookService } from '../services/WebhookService';
 
@@ -202,13 +202,13 @@ export class PaymentMonitorV2 extends EventEmitter {
             ).catch(err => logger.error('Failed to send payment email', err));
           }
 
-          // Trigger auto-conversion for SOL payments
+          // Trigger agentic auto-conversion for SOL payments
           if (merchant.auto_convert_enabled) {
-            logger.info(`🔄 Triggering auto-conversion: ${amountSOL} SOL → USDC`);
+            logger.info(`🤖 Triggering agentic conversion with AI decision-making`);
             
-            // Run conversion in background (don't await)
-            conversionService.autoConvertPayment(saved.id!, address, amountSOL)
-              .catch(err => logger.error('Auto-conversion failed', err));
+            // Run agentic conversion in background (don't await)
+            agenticConversionService.autoConvertPayment(saved.id!, address, amountSOL)
+              .catch(err => logger.error('Agentic conversion failed', err));
           }
         }
 

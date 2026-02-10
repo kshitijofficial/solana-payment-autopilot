@@ -8,6 +8,7 @@ export interface Merchant {
   wallet_address: string;
   notification_email?: string;
   auto_convert_enabled: boolean;
+  risk_profile?: 'conservative' | 'moderate' | 'aggressive';
   created_at: string;
   updated_at: string;
 }

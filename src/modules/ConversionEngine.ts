@@ -80,7 +80,7 @@ export class ConversionEngine {
         throw new Error(`Jupiter swap API error: ${swapResponse.statusText}`);
       }
 
-      const { swapTransaction } = await swapResponse.json();
+      const { swapTransaction }: any = await swapResponse.json();
       
       // Deserialize the transaction
       const transactionBuf = Buffer.from(swapTransaction, 'base64');

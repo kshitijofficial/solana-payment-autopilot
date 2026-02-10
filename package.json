@@ -34,6 +34,7 @@
   "author": "openclaw-kshitij",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@coral-xyz/anchor": "^0.29.0",
     "@jup-ag/api": "^6.0.0",
     "@solana/pay": "^0.2.6",
