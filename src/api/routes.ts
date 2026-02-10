@@ -676,3 +676,67 @@ router.get('/accounting/monthly/:merchantId/:year/:month', async (req: Request, 
 });
 
 export default router;
+// Add to routes.ts - Demo mode endpoints
+
+// Trigger demo payment scenario
+router.post('/demo/trigger-payment', async (req: Request, res: Response) => {
+  try {
+    const { merchantId, scenario } = req.body;
+    
+    // Create demo transaction based on scenario
+    const scenarios = {
+      normal: { amount: 0.05, description: 'Normal coffee purchase' },
+      large: { amount: 5.0, description: 'Suspiciously large payment' },
+      rapid: { amount: 0.03, description: 'Rapid payment spike' }
+    };
+    
+    const config = scenarios[scenario as keyof typeof scenarios] || scenarios.normal;
+    
+    const tx = await db.createTransaction({
+      merchant_id: merchantId,
+      signature: `demo-${Date.now()}`,
+      from_address: Keypair.generate().publicKey.toString(),
+      to_address: 'demo-wallet',
+      amount: config.amount,
+      token: 'SOL',
+      status: 'confirmed',
+      confirmations: 32,
+      block_time: new Date()
+    });
+    
+    res.json({ success: true, data: tx });
+  } catch (error) {
+    logger.error('Demo trigger failed', error);
+    res.status(500).json({ success: false, error: 'Failed to trigger demo' });
+  }
+});
+
+// Get agent activity feed (last 20 decisions with reasoning)
+router.get('/agent/activity/:merchantId', async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+    
+    const decisions = await db.getClient()
+      .from('agent_decisions')
+      .select('*')
+      .eq('merchant_id', merchantId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    
+    const feed = (decisions.data || []).map((d: any) => ({
+      id: d.id,
+      timestamp: d.created_at,
+      type: 'decision',
+      decision: d.decision,
+      confidence: d.confidence,
+      reasoning: d.reasoning,
+      amount: d.context?.amountSOL,
+      estimatedValue: d.estimated_usd_value
+    }));
+    
+    res.json({ success: true, data: feed });
+  } catch (error) {
+    logger.error('Failed to get activity feed', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch activity' });
+  }
+});
