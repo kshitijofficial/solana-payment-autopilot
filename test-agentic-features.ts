@@ -5,7 +5,10 @@
 
 // MUST load .env BEFORE any other imports
 import * as dotenv from 'dotenv';
-dotenv.config();
+import * as path from 'path';
+
+// Load .env from project root
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { db } from './src/database/supabase';
