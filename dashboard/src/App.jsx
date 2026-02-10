@@ -297,16 +297,41 @@ export default function App() {
                     </p>
                   </div>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Email</p>
-                    <p className="text-sm font-semibold text-gray-900">{selectedMerchant.email}</p>
+                <div className="space-y-4">
+                  {/* Merchant ID - Prominent Display */}
+                  <div className="bg-white rounded-lg p-4 border border-blue-300">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-600 mb-1 font-semibold">Merchant ID (for login)</p>
+                        <p className="text-sm font-mono text-gray-900 break-all">{selectedMerchant.id}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedMerchant.id);
+                          alert('Merchant ID copied to clipboard!');
+                        }}
+                        className="ml-3 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Auto-Convert</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedMerchant.auto_convert_enabled ? '✅ Enabled' : '❌ Disabled'}
-                    </p>
+                  
+                  {/* Other Details */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Email</p>
+                      <p className="text-sm font-semibold text-gray-900">{selectedMerchant.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Auto-Convert</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {selectedMerchant.auto_convert_enabled ? '✅ Enabled' : '❌ Disabled'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
