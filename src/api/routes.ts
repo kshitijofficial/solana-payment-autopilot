@@ -7,6 +7,7 @@ import { conversionService } from '../services/ConversionService';
 import { paymentRequestService } from '../services/PaymentRequestService';
 import { merchantChatAgent } from '../services/MerchantChatAgent';
 import { agentInsightsService } from '../services/AgentInsightsService';
+import { accountingService } from '../services/AccountingService';
 
 const router = Router();
 
@@ -627,6 +628,40 @@ router.get('/agent/alerts/:merchantId', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Failed to generate alerts', error);
     res.status(500).json({ success: false, error: 'Failed to generate alerts' });
+  }
+});
+
+// ===== ACCOUNTING & REPORTS =====
+
+// Generate tax report
+router.get('/accounting/tax-report/:merchantId/:year', async (req: Request, res: Response) => {
+  try {
+    const { merchantId, year } = req.params;
+    const csv = await accountingService.generateTaxReport(merchantId, parseInt(year));
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=tax-report-${year}.csv`);
+    res.send(csv);
+  } catch (error) {
+    logger.error('Failed to generate tax report', error);
+    res.status(500).json({ success: false, error: 'Failed to generate tax report' });
+  }
+});
+
+// Get monthly summary
+router.get('/accounting/monthly/:merchantId/:year/:month', async (req: Request, res: Response) => {
+  try {
+    const { merchantId, year, month } = req.params;
+    const report = await accountingService.generateMonthlyReport(
+      merchantId, 
+      parseInt(month), 
+      parseInt(year)
+    );
+    
+    res.json({ success: true, data: report });
+  } catch (error) {
+    logger.error('Failed to generate monthly report', error);
+    res.status(500).json({ success: false, error: 'Failed to generate monthly report' });
   }
 });
 
