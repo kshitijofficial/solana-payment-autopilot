@@ -244,14 +244,12 @@
             // Check if user is logged in
             const session = getSession();
             
-            if (!session || !session.merchantId) {
+            if (!session) {
                 // Not logged in, redirect to login page
-                console.log('No valid session found, redirecting to login');
                 window.location.href = 'login.html';
                 return;
             }
 
-            console.log('Session found:', session);
             // Set merchant ID from session
             MERCHANT_ID = session.merchantId;
 
