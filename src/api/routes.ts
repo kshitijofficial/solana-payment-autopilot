@@ -5,6 +5,7 @@ import { Keypair } from '@solana/web3.js';
 import QRCode from 'qrcode';
 import { conversionService } from '../services/ConversionService';
 import { paymentRequestService } from '../services/PaymentRequestService';
+import { merchantChatAgent } from '../services/MerchantChatAgent';
 
 const router = Router();
 
@@ -505,6 +506,110 @@ router.post('/signup/check-payment', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Signup payment check failed', error);
     res.status(500).json({ success: false, error: 'Payment verification failed' });
+  }
+});
+
+// ===== AGENT CHAT & INSIGHTS =====
+
+// Chat with agent
+router.post('/agent/chat', async (req: Request, res: Response) => {
+  try {
+    const { merchant_id, message } = req.body;
+
+    if (!merchant_id || !message) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing required fields: merchant_id, message' 
+      });
+    }
+
+    const reply = await merchantChatAgent.chat(merchant_id, message);
+    
+    res.json({ 
+      success: true, 
+      data: { 
+        reply,
+        timestamp: new Date().toISOString()
+      } 
+    });
+
+  } catch (error) {
+    logger.error('Agent chat failed', error);
+    res.status(500).json({ success: false, error: 'Chat failed' });
+  }
+});
+
+// Get agent decision history for merchant
+router.get('/agent/decisions/:merchantId', async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await db.getClient()
+      .from('agent_decisions')
+      .select('*')
+      .eq('merchant_id', merchantId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    res.json({ 
+      success: true, 
+      data: result.data || [] 
+    });
+
+  } catch (error) {
+    logger.error('Failed to get agent decisions', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch decisions' });
+  }
+});
+
+// Get agent insights/statistics
+router.get('/agent/insights/:merchantId', async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+
+    // Get decision summary
+    const decisionsResult = await db.getClient()
+      .from('agent_decisions')
+      .select('decision, confidence, estimated_usd_value, actual_usd_value')
+      .eq('merchant_id', merchantId);
+
+    const decisions = decisionsResult.data || [];
+
+    // Calculate statistics
+    const totalDecisions = decisions.length;
+    const convertNowCount = decisions.filter((d: any) => d.decision === 'convert_now').length;
+    const waitCount = decisions.filter((d: any) => d.decision === 'wait').length;
+    const monitorCount = decisions.filter((d: any) => d.decision === 'monitor').length;
+    
+    const avgConfidence = decisions.length > 0 
+      ? decisions.reduce((sum: number, d: any) => sum + (d.confidence || 0), 0) / decisions.length 
+      : 0;
+
+    // Calculate gains/losses
+    const completedDecisions = decisions.filter((d: any) => d.actual_usd_value);
+    const totalGainLoss = completedDecisions.reduce((sum: number, d: any) => {
+      return sum + ((d.actual_usd_value || 0) - (d.estimated_usd_value || 0));
+    }, 0);
+
+    res.json({
+      success: true,
+      data: {
+        totalDecisions,
+        breakdown: {
+          convert_now: convertNowCount,
+          wait: waitCount,
+          monitor: monitorCount
+        },
+        avgConfidence: Math.round(avgConfidence * 100),
+        totalGainLoss: parseFloat(totalGainLoss.toFixed(2)),
+        completedDecisions: completedDecisions.length
+      }
+    });
+
+  } catch (error) {
+    logger.error('Failed to get agent insights', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch insights' });
   }
 });
 
