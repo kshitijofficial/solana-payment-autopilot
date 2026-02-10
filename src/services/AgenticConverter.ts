@@ -38,7 +38,7 @@ export interface ConversionDecision {
  */
 export class AgenticConverter {
   private anthropic: Anthropic;
-  private model: string = 'claude-sonnet-4';
+  private model: string = 'claude-sonnet-4-20250514';
 
   constructor() {
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
