@@ -103,6 +103,14 @@
             </div>
         </div>
 
+        <!-- Agent Alerts & Insights -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8" id="agentAlertsContainer">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">💡 Agent Insights</h2>
+            <div id="agentAlerts" class="space-y-3">
+                <p class="text-gray-500 text-sm">Loading insights...</p>
+            </div>
+        </div>
+
         <!-- Account Information -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -281,10 +289,12 @@
             // Load merchant data
             loadMerchantData();
             loadAgentStats();
+            loadAgentAlerts();
             
             // Auto-refresh every 15 seconds
             setInterval(loadMerchantData, 15000);
             setInterval(loadAgentStats, 30000);
+            setInterval(loadAgentAlerts, 60000);
         });
 
         // Get session from localStorage
@@ -596,6 +606,43 @@
                 }
             } catch (error) {
                 console.error('Failed to load agent stats:', error);
+            }
+        }
+
+        async function loadAgentAlerts() {
+            try {
+                const res = await fetch(`${API_BASE}/agent/alerts/${MERCHANT_ID}`);
+                const data = await res.json();
+                if (data.success && data.data.length > 0) {
+                    const container = document.getElementById('agentAlerts');
+                    const priorityColors = {
+                        high: 'bg-red-50 border-red-200 text-red-900',
+                        medium: 'bg-yellow-50 border-yellow-200 text-yellow-900',
+                        low: 'bg-blue-50 border-blue-200 text-blue-900'
+                    };
+                    const priorityIcons = {
+                        high: '🚨',
+                        medium: '⚠️',
+                        low: 'ℹ️'
+                    };
+                    
+                    container.innerHTML = data.data.map(alert => `
+                        <div class="border-l-4 p-4 rounded ${priorityColors[alert.priority]}">
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl">${priorityIcons[alert.priority]}</span>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold mb-1">${alert.title}</h3>
+                                    <p class="text-sm">${alert.message}</p>
+                                    ${alert.action ? `<button class="mt-2 text-xs font-semibold underline">${alert.action}</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('agentAlerts').innerHTML = '<p class="text-gray-500 text-sm">No alerts at the moment. Your agent is monitoring everything.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load agent alerts:', error);
             }
         }
     </script>
