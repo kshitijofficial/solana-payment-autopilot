@@ -9,6 +9,17 @@ dotenv.config();
 
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { db } from './src/database/supabase';
+
+// Check if API key exists before importing services
+const hasApiKey = !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY);
+
+if (!hasApiKey) {
+  console.error('\n❌ ERROR: ANTHROPIC_API_KEY not found in .env file');
+  console.error('Please add your Anthropic API key to .env:');
+  console.error('ANTHROPIC_API_KEY=sk-ant-api03-YOUR-KEY-HERE\n');
+  process.exit(1);
+}
+
 import { agenticConverter } from './src/services/AgenticConverter';
 import { merchantChatAgent } from './src/services/MerchantChatAgent';
 import { agentInsightsService } from './src/services/AgentInsightsService';
