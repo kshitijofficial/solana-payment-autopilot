@@ -27,6 +27,9 @@ export class MerchantChatAgent {
 
       // Get merchant context
       const merchant = await this.getMerchantContext(merchantId);
+      if (!merchant) {
+        return 'Sorry, I could not find your merchant account. Please make sure you are logged in correctly.';
+      }
       
       // Get recent decisions
       const recentDecisions = await this.getRecentDecisions(merchantId);
@@ -49,9 +52,10 @@ export class MerchantChatAgent {
       logger.info(`🤖 Agent reply: ${reply.substring(0, 100)}...`);
       return reply;
 
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Chat agent failed', error);
-      return 'Sorry, I encountered an error. Please try again.';
+      const errorMsg = error?.message || 'Unknown error';
+      return `Sorry, I encountered an error: ${errorMsg}. Please make sure the ANTHROPIC_API_KEY is set.`;
     }
   }
 
