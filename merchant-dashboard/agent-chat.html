@@ -319,12 +319,20 @@
 
   <script>
     const API_URL = 'http://localhost:3000/api';
-    const MERCHANT_ID = localStorage.getItem('merchantId');
-
-    if (!MERCHANT_ID) {
+    
+    // Get merchant ID from session
+    function getSession() {
+      const sessionData = localStorage.getItem('merchantSession');
+      return sessionData ? JSON.parse(sessionData) : null;
+    }
+    
+    const session = getSession();
+    if (!session || !session.merchantId) {
       alert('Please log in first!');
       window.location.href = '/login.html';
     }
+    
+    const MERCHANT_ID = session.merchantId;
 
     // Load initial data
     async function loadAgentData() {
