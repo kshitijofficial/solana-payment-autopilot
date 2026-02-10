@@ -37,15 +37,14 @@ export interface ConversionDecision {
  * Uses Claude to make intelligent conversion timing decisions
  */
 export class AgenticConverter {
-  private anthropic: Anthropic;
+  private anthropic?: Anthropic;
   private model: string = 'claude-sonnet-4-20250514';
 
   constructor() {
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
-    if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY or CLAUDE_API_KEY not found in environment');
+    if (apiKey) {
+      this.anthropic = new Anthropic({ apiKey });
     }
-    this.anthropic = new Anthropic({ apiKey });
   }
 
   /**
@@ -53,6 +52,10 @@ export class AgenticConverter {
    */
   async decideConversion(context: ConversionContext): Promise<ConversionDecision> {
     try {
+      if (!this.anthropic) {
+        throw new Error('ANTHROPIC_API_KEY not configured');
+      }
+      
       logger.info(`🤖 Agent analyzing conversion decision for ${context.amountSOL} SOL`);
 
       const prompt = this.buildDecisionPrompt(context);

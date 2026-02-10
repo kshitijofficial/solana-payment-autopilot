@@ -7,15 +7,14 @@ import { db } from '../database/supabase';
  * Allows merchants to interact with the AI agent via natural language
  */
 export class MerchantChatAgent {
-  private anthropic: Anthropic;
+  private anthropic?: Anthropic;
   private model: string = 'claude-sonnet-4-20250514';
 
   constructor() {
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
-    if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    if (apiKey) {
+      this.anthropic = new Anthropic({ apiKey });
     }
-    this.anthropic = new Anthropic({ apiKey });
   }
 
   /**
@@ -23,6 +22,10 @@ export class MerchantChatAgent {
    */
   async chat(merchantId: string, message: string): Promise<string> {
     try {
+      if (!this.anthropic) {
+        return 'AI agent not configured. Please set ANTHROPIC_API_KEY in environment.';
+      }
+      
       logger.info(`💬 Merchant chat: ${message}`);
 
       // Get merchant context
