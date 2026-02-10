@@ -569,12 +569,21 @@ router.get('/agent/decisions/:merchantId', async (req: Request, res: Response) =
 router.get('/agent/insights/:merchantId', async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
+    const network = req.query.network as string || 'devnet';
 
-    // Get decision summary
+    // Get decision summary with network filtering (join with transactions)
     const decisionsResult = await db.getClient()
       .from('agent_decisions')
-      .select('decision, confidence, estimated_usd_value, actual_usd_value')
-      .eq('merchant_id', merchantId);
+      .select(`
+        decision, 
+        confidence, 
+        estimated_usd_value, 
+        actual_usd_value,
+        transaction_id,
+        transactions!inner (network)
+      `)
+      .eq('merchant_id', merchantId)
+      .eq('transactions.network', network);
 
     const decisions = decisionsResult.data || [];
 
@@ -619,7 +628,8 @@ router.get('/agent/insights/:merchantId', async (req: Request, res: Response) =>
 router.get('/agent/alerts/:merchantId', async (req: Request, res: Response) => {
   try {
     const { merchantId } = req.params;
-    const insights = await agentInsightsService.generateInsights(merchantId);
+    const network = req.query.network as 'mainnet' | 'devnet' || 'devnet';
+    const insights = await agentInsightsService.generateInsights(merchantId, network);
     
     res.json({ 
       success: true, 

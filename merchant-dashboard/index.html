@@ -349,6 +349,8 @@
             localStorage.setItem('selectedNetwork', network);
             updateNetworkToggle();
             loadMerchantData();
+            loadAgentStats();
+            loadAgentAlerts();
             showToast(`Switched to ${network === 'mainnet' ? '🌐 Mainnet' : '🧪 Devnet'}`);
         }
 
@@ -671,7 +673,7 @@
 
         async function loadAgentStats() {
             try {
-                const res = await fetch(`${API_BASE}/agent/insights/${MERCHANT_ID}`);
+                const res = await fetch(`${API_BASE}/agent/insights/${MERCHANT_ID}?network=${SELECTED_NETWORK}`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('agentTotalDecisions').textContent = data.data.totalDecisions;
@@ -686,7 +688,7 @@
 
         async function loadAgentAlerts() {
             try {
-                const res = await fetch(`${API_BASE}/agent/alerts/${MERCHANT_ID}`);
+                const res = await fetch(`${API_BASE}/agent/alerts/${MERCHANT_ID}?network=${SELECTED_NETWORK}`);
                 const data = await res.json();
                 if (data.success && data.data.length > 0) {
                     const container = document.getElementById('agentAlerts');

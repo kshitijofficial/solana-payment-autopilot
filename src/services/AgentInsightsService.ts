@@ -21,11 +21,11 @@ export class AgentInsightsService {
     }
   }
 
-  async generateInsights(merchantId: string): Promise<Insight[]> {
+  async generateInsights(merchantId: string, network: 'mainnet' | 'devnet' = 'devnet'): Promise<Insight[]> {
     const insights: Insight[] = [];
     
     try {
-      const data = await this.getMerchantData(merchantId);
+      const data = await this.getMerchantData(merchantId, network);
       
       // Fraud detection
       const fraudAlert = this.detectFraud(data);
@@ -58,11 +58,12 @@ export class AgentInsightsService {
     }
   }
 
-  private async getMerchantData(merchantId: string) {
+  private async getMerchantData(merchantId: string, network: 'mainnet' | 'devnet' = 'devnet') {
     const txs = await db.getClient()
       .from('transactions')
       .select('*')
       .eq('merchant_id', merchantId)
+      .eq('network', network)
       .order('created_at', { ascending: false })
       .limit(100);
 
