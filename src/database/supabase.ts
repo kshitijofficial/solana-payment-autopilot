@@ -9,6 +9,7 @@ export interface Merchant {
   notification_email?: string;
   auto_convert_enabled: boolean;
   risk_profile?: 'conservative' | 'moderate' | 'aggressive';
+  network: 'mainnet' | 'devnet';
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface Transaction {
   status: 'pending' | 'confirmed' | 'failed';
   confirmations?: number;
   block_time?: Date;
+  network: 'mainnet' | 'devnet';
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +43,7 @@ export interface Conversion {
   slippage_bps: number;
   status: 'pending' | 'completed' | 'failed';
   error_message?: string;
+  network: 'mainnet' | 'devnet';
   created_at?: string;
   updated_at?: string;
 }
@@ -61,6 +64,7 @@ export interface PaymentRequest {
   transaction_id?: string;
   payment_url?: string;
   qr_code_data?: string;
+  network: 'mainnet' | 'devnet';
   expires_at: string;
   paid_at?: string;
   created_at?: string;
