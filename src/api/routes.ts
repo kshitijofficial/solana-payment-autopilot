@@ -633,14 +633,24 @@ router.get('/agent/alerts/:merchantId', async (req: Request, res: Response) => {
 
 // ===== ACCOUNTING & REPORTS =====
 
-// Generate tax report
-router.get('/accounting/tax-report/:merchantId/:year', async (req: Request, res: Response) => {
+// Generate tax report with date range
+router.get('/accounting/tax-report/:merchantId', async (req: Request, res: Response) => {
   try {
-    const { merchantId, year } = req.params;
-    const csv = await accountingService.generateTaxReport(merchantId, parseInt(year));
+    const { merchantId } = req.params;
+    const { start, end } = req.query;
+    
+    if (!start || !end) {
+      return res.status(400).json({ success: false, error: 'Missing start or end date' });
+    }
+    
+    const csv = await accountingService.generateTaxReportByDateRange(
+      merchantId, 
+      start as string, 
+      end as string
+    );
     
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=tax-report-${year}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=tax-report-${start}-to-${end}.csv`);
     res.send(csv);
   } catch (error) {
     logger.error('Failed to generate tax report', error);
