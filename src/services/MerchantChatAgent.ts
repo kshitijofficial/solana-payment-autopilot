@@ -162,5 +162,16 @@ Answer naturally and helpfully!`;
   }
 }
 
-// Singleton instance
-export const merchantChatAgent = new MerchantChatAgent();
+// Lazy singleton - only create when first accessed
+let _instance: MerchantChatAgent | null = null;
+
+export const merchantChatAgent = {
+  get instance() {
+    if (!_instance) {
+      _instance = new MerchantChatAgent();
+    }
+    return _instance;
+  },
+  // Proxy method
+  chat: (merchantId: string, message: string) => merchantChatAgent.instance.chat(merchantId, message)
+};

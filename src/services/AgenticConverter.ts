@@ -301,5 +301,20 @@ Think carefully about the merchant's needs and market conditions. Provide your h
   }
 }
 
-// Singleton instance
-export const agenticConverter = new AgenticConverter();
+// Lazy singleton - only create when first accessed
+let _instance: AgenticConverter | null = null;
+
+export const agenticConverter = {
+  get instance() {
+    if (!_instance) {
+      _instance = new AgenticConverter();
+    }
+    return _instance;
+  },
+  // Proxy methods
+  decideConversion: (context: ConversionContext) => agenticConverter.instance.decideConversion(context),
+  getCurrentPrice: () => agenticConverter.instance.getCurrentPrice(),
+  calculateVolatility: (prices: number[]) => agenticConverter.instance.calculateVolatility(prices),
+  determineTransactionSize: (amount: number, merchantAverage?: number) => 
+    agenticConverter.instance.determineTransactionSize(amount, merchantAverage)
+};

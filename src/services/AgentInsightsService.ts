@@ -236,4 +236,15 @@ export class AgentInsightsService {
   }
 }
 
-export const agentInsightsService = new AgentInsightsService();
+// Lazy singleton
+let _instance: AgentInsightsService | null = null;
+
+export const agentInsightsService = {
+  get instance() {
+    if (!_instance) {
+      _instance = new AgentInsightsService();
+    }
+    return _instance;
+  },
+  generateInsights: (merchantId: string) => agentInsightsService.instance.generateInsights(merchantId)
+};
