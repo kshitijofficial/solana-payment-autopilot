@@ -3,6 +3,10 @@
  * Creates realistic scenarios to demonstrate AI agent capabilities
  */
 
+// MUST load .env BEFORE any other imports
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { db } from './src/database/supabase';
 import { agenticConverter } from './src/services/AgenticConverter';
