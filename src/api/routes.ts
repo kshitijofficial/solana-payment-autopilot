@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { conversionService } from '../services/ConversionService';
 import { paymentRequestService } from '../services/PaymentRequestService';
 import { merchantChatAgent } from '../services/MerchantChatAgent';
+import { agentInsightsService } from '../services/AgentInsightsService';
 
 const router = Router();
 
@@ -610,6 +611,22 @@ router.get('/agent/insights/:merchantId', async (req: Request, res: Response) =>
   } catch (error) {
     logger.error('Failed to get agent insights', error);
     res.status(500).json({ success: false, error: 'Failed to fetch insights' });
+  }
+});
+
+// Get proactive agent alerts/recommendations
+router.get('/agent/alerts/:merchantId', async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+    const insights = await agentInsightsService.generateInsights(merchantId);
+    
+    res.json({ 
+      success: true, 
+      data: insights
+    });
+  } catch (error) {
+    logger.error('Failed to generate alerts', error);
+    res.status(500).json({ success: false, error: 'Failed to generate alerts' });
   }
 });
 
