@@ -676,9 +676,11 @@
         // Chat widget functions
         function toggleChat() {
             const widget = document.getElementById('chatWidget');
-            widget.classList.toggle('hidden');
-            if (!widget.classList.contains('hidden')) {
+            if (widget.style.display === 'none' || widget.style.display === '') {
+                widget.style.display = 'flex';
                 document.getElementById('chatInput').focus();
+            } else {
+                widget.style.display = 'none';
             }
         }
 
@@ -789,7 +791,7 @@
     </script>
 
     <!-- Chat Widget -->
-    <div id="chatWidget" class="hidden fixed bottom-20 right-6 w-96 bg-white rounded-lg shadow-2xl flex flex-col" style="max-height: 500px;">
+    <div id="chatWidget" class="fixed bottom-20 right-6 w-96 bg-white rounded-lg shadow-2xl flex flex-col" style="max-height: 500px; display: none; flex-direction: column;">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-lg flex justify-between items-center">
             <span class="font-semibold">🤖 Chat with Agent</span>
             <button onclick="toggleChat()" class="text-white hover:text-gray-200">✕</button>
