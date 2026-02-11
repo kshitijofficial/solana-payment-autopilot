@@ -74,9 +74,7 @@ export class AgenticConverter {
       const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
       const decision = this.parseDecision(responseText, context);
 
-      // Log the decision
-      await this.logDecision(context, decision);
-
+      // Note: Decision logging happens in AgenticConversionService (orchestration layer)
       logger.info(`🧠 Agent decision: ${decision.decision} (${Math.round(decision.confidence * 100)}% confidence)`);
       logger.info(`💭 Reasoning: ${decision.reasoning}`);
 
@@ -220,7 +218,10 @@ Think carefully about the merchant's needs and market conditions. Provide your h
    */
   private async logDecision(context: ConversionContext, decision: ConversionDecision): Promise<void> {
     try {
-      await db.getClient().from('agent_decisions').insert({
+      logger.info(`📝 Logging decision to database: ${decision.decision} (${decision.confidence}% confidence)`);
+      logger.info(`   Transaction ID: ${context.transactionId} | Merchant ID: ${context.merchantId}`);
+      
+      const result = await db.getClient().from('agent_decisions').insert({
         transaction_id: context.transactionId,
         merchant_id: context.merchantId,
         decision_type: 'conversion_timing',
@@ -240,6 +241,12 @@ Think carefully about the merchant's needs and market conditions. Provide your h
         actual_usd_value: null, // Will update after conversion
         created_at: new Date().toISOString()
       });
+      
+      if (result.error) {
+        logger.error('❌ Database error logging decision:', result.error);
+      } else {
+        logger.info('✅ Decision logged successfully to database');
+      }
     } catch (error) {
       // Don't fail the conversion if logging fails
       logger.error('Failed to log agent decision', error);

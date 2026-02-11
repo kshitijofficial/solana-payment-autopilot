@@ -143,6 +143,7 @@ export class PaymentMonitorV2 extends EventEmitter {
           status: 'confirmed',
           confirmations: 32,
           block_time: new Date(sigTime),
+          network: 'devnet', // Always set network for proper filtering
         });
 
         if (saved) {
