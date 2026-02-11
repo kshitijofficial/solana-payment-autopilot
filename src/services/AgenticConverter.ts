@@ -313,6 +313,8 @@ export const agenticConverter = {
   },
   // Proxy methods
   decideConversion: (context: ConversionContext) => agenticConverter.instance.decideConversion(context),
+  logDecision: (context: ConversionContext, decision: ConversionDecision) => 
+    agenticConverter.instance.logDecision(context, decision),
   getCurrentPrice: () => agenticConverter.instance.getCurrentPrice(),
   calculateVolatility: (prices: number[]) => agenticConverter.instance.calculateVolatility(prices),
   determineTransactionSize: (amount: number, merchantAverage?: number) => 

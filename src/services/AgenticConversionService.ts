@@ -346,12 +346,12 @@ export class AgenticConversionService {
   /**
    * Auto-convert with agentic decision-making
    */
-  async autoConvertPayment(transactionId: string, merchantId: string, amountSol: number): Promise<void> {
+  async autoConvertPayment(transactionId: string, merchantWalletAddress: string, amountSol: number): Promise<void> {
     try {
-      // Get merchant
-      const merchant = await db.getMerchantByWallet(merchantId);
+      // Get merchant by wallet address
+      const merchant = await db.getMerchantByWallet(merchantWalletAddress);
       if (!merchant) {
-        logger.warn(`Merchant not found: ${merchantId}`);
+        logger.warn(`Merchant not found: ${merchantWalletAddress}`);
         return;
       }
 
@@ -366,7 +366,7 @@ export class AgenticConversionService {
       // Build context for agent decision
       const context = await this.buildConversionContext(
         transactionId,
-        merchantId,
+        merchant.id, // Use merchant UUID, not wallet address
         merchant.business_name,
         amountSol,
         merchant.risk_profile || 'conservative'
