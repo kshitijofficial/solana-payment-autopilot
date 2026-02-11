@@ -41,6 +41,9 @@ export class AgenticConversionService {
       // Get AI agent's decision
       const decision = await agenticConverter.decideConversion(context);
 
+      // Log decision to database for audit trail
+      await agenticConverter.logDecision(context, decision);
+
       // Handle decision
       if (decision.decision === 'convert_now') {
         logger.info('✅ Agent decided: Convert immediately');
@@ -202,6 +205,9 @@ export class AgenticConversionService {
       // Re-evaluate with fresh context
       const freshContext = await this.buildFreshContext(context);
       const newDecision = await agenticConverter.decideConversion(freshContext);
+      
+      // Log re-evaluation decision
+      await agenticConverter.logDecision(freshContext, newDecision);
 
       if (newDecision.decision === 'convert_now') {
         await this.executeConversion(
