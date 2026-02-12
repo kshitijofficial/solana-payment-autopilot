@@ -216,7 +216,7 @@ Think carefully about the merchant's needs and market conditions. Provide your h
   /**
    * Log agent decision to database for learning and audit
    */
-  private async logDecision(context: ConversionContext, decision: ConversionDecision): Promise<void> {
+  async logDecision(context: ConversionContext, decision: ConversionDecision): Promise<void> {
     try {
       logger.info(`📝 Logging decision to database: ${decision.decision} (${decision.confidence}% confidence)`);
       logger.info(`   Transaction ID: ${context.transactionId} | Merchant ID: ${context.merchantId}`);

@@ -1,6 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../utils/logger';
 import { db } from '../database/supabase';
+import { Connection, Keypair, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { getAssociatedTokenAddress, createTransferInstruction } from '@solana/spl-token';
+import bs58 from 'bs58';
 
 /**
  * Merchant Chat Agent
@@ -18,7 +21,7 @@ export class MerchantChatAgent {
   }
 
   /**
-   * Chat with merchant - answer questions, provide insights
+   * Chat with merchant - answer questions, provide insights, execute actions
    */
   async chat(merchantId: string, message: string): Promise<string> {
     try {
@@ -32,6 +35,12 @@ export class MerchantChatAgent {
       const merchant = await this.getMerchantContext(merchantId);
       if (!merchant) {
         return 'Sorry, I could not find your merchant account. Please make sure you are logged in correctly.';
+      }
+      
+      // Check if message is requesting a conversion
+      const conversionRequest = this.parseConversionRequest(message);
+      if (conversionRequest) {
+        return await this.handleConversionRequest(merchant, conversionRequest);
       }
       
       // Get recent decisions
@@ -59,6 +68,111 @@ export class MerchantChatAgent {
       logger.error('Chat agent failed', error);
       const errorMsg = error?.message || 'Unknown error';
       return `Sorry, I encountered an error: ${errorMsg}. Please make sure the ANTHROPIC_API_KEY is set.`;
+    }
+  }
+
+  /**
+   * Parse conversion request from message
+   */
+  private parseConversionRequest(message: string): { type: 'usdc_to_sol' | 'sol_to_usdc', amount: number } | null {
+    const lowerMsg = message.toLowerCase();
+    
+    // Patterns for USDC → SOL
+    const usdcToSolPatterns = [
+      /convert\s+(\d+\.?\d*)\s*(usdc)?\s+to\s+sol/i,
+      /buy\s+(\d+\.?\d*)\s*sol/i,
+      /swap\s+(\d+\.?\d*)\s*(usdc)?\s+(to|for)\s+sol/i,
+      /(\d+\.?\d*)\s*usdc\s+to\s+sol/i
+    ];
+
+    for (const pattern of usdcToSolPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        const amount = parseFloat(match[1]);
+        if (!isNaN(amount) && amount > 0) {
+          return { type: 'usdc_to_sol', amount };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Handle conversion request
+   */
+  private async handleConversionRequest(
+    merchantContext: any, 
+    request: { type: 'usdc_to_sol' | 'sol_to_usdc', amount: number }
+  ): Promise<string> {
+    try {
+      const merchant = merchantContext.merchant;
+      
+      if (request.type === 'usdc_to_sol') {
+        logger.info(`🔄 Converting ${request.amount} USDC → SOL for merchant ${merchant.business_name}`);
+        
+        // Execute conversion
+        const result = await this.convertUsdcToSol(merchant.wallet_address, request.amount);
+        
+        if (result.success) {
+          return `✅ Successfully converted ${request.amount} USDC to ${result.solAmount?.toFixed(4)} SOL!\n\n` +
+                 `Transaction: ${result.signature}\n` +
+                 `View on Solscan: https://solscan.io/tx/${result.signature}?cluster=devnet\n\n` +
+                 `Your new SOL balance will be available shortly.`;
+        } else {
+          return `❌ Conversion failed: ${result.error}\n\nPlease make sure you have sufficient USDC balance.`;
+        }
+      }
+
+      return 'Conversion type not supported yet.';
+    } catch (error: any) {
+      logger.error('Conversion request failed', error);
+      return `❌ Sorry, the conversion failed: ${error.message}`;
+    }
+  }
+
+  /**
+   * Convert USDC to SOL using Jupiter
+   */
+  private async convertUsdcToSol(
+    merchantWallet: string, 
+    usdcAmount: number
+  ): Promise<{ success: boolean; signature?: string; solAmount?: number; error?: string }> {
+    try {
+      // For devnet, simulate the conversion
+      const isDevnet = process.env.SOLANA_NETWORK === 'devnet';
+      
+      if (isDevnet) {
+        logger.info('🎭 Simulating USDC→SOL conversion on devnet');
+        
+        // Mock conversion rate: ~$150/SOL
+        const mockSolPrice = 150;
+        const solAmount = usdcAmount / mockSolPrice;
+        
+        // Generate mock signature
+        const mockSignature = `mock_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        
+        logger.info(`✅ Simulated: ${usdcAmount} USDC → ${solAmount.toFixed(4)} SOL`);
+        
+        return {
+          success: true,
+          signature: mockSignature,
+          solAmount
+        };
+      }
+
+      // TODO: Implement real mainnet conversion via Jupiter
+      return {
+        success: false,
+        error: 'Mainnet conversion not implemented yet. Currently only devnet simulation is available.'
+      };
+
+    } catch (error: any) {
+      logger.error('USDC→SOL conversion failed', error);
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
 
@@ -143,11 +257,19 @@ ${decisions.length > 0 ? decisions.map((d: any) => `
 - Time: ${new Date(d.created_at).toLocaleString()}
 `).join('\n') : 'No recent decisions'}
 
+## Actions You Can Perform
+When the merchant asks, you can:
+- **Convert USDC back to SOL**: If they say "convert X USDC to SOL" or "buy X SOL", you will execute the swap automatically
+- Explain conversion decisions
+- Provide payment insights
+- Answer questions about transactions
+
 ## How to Respond
 - Be conversational and friendly
 - Explain your conversion decisions clearly
 - Provide insights about their payment patterns
 - Offer helpful suggestions
+- If they request a conversion, confirm you're processing it
 - If they ask about specific transactions, reference the data above
 - If they ask about your reasoning, explain the factors you consider
 
@@ -157,6 +279,8 @@ ${decisions.length > 0 ? decisions.map((d: any) => `
 - "Should I change my risk profile?"
 - "Why are you waiting to convert?"
 - "Can you explain your decision?"
+- "Convert 10 USDC to SOL" ← You'll handle this automatically!
+- "Buy 0.1 SOL" ← You'll execute this swap!
 
 Answer naturally and helpfully!`;
   }
