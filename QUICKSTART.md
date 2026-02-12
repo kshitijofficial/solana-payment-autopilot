@@ -12,6 +12,25 @@
 
 ---
 
+## ⚠️ Important: Devnet Demo Mode
+
+This demo runs on **Solana devnet** with **simulated conversions**.
+
+**What's real:**
+- ✅ Payment detection (actual blockchain monitoring)
+- ✅ Wallet generation (real Solana keypairs)
+- ✅ Email notifications (real emails via Resend)
+- ✅ AI agent decisions (Claude AI)
+
+**What's simulated:**
+- ⚠️ **SOL→USDC conversion** (Jupiter API doesn't support devnet swaps)
+- Uses fixed rate: ~$150/SOL
+- Real conversion code exists, ready for mainnet
+
+**To use real conversions:** Set `SOLANA_NETWORK=mainnet` in `.env`
+
+---
+
 ## 🚀 Installation
 
 ### 1. Clone & Install

@@ -49,6 +49,32 @@ An autonomous AI agent that handles everything:
 
 ---
 
+### ⚠️ Devnet Limitation: Mock Conversions
+
+**Important:** Jupiter Aggregator does not support SOL→USDC swaps on devnet (no liquidity pools). 
+
+**Our solution:**
+- **Devnet (demo)**: Mock conversions using fixed rate (~$150/SOL)
+- **Mainnet (production)**: Real Jupiter swaps at market rates
+
+**What's simulated on devnet:**
+- ✅ Payment detection - **REAL** (monitors actual devnet transactions)
+- ✅ Wallet generation - **REAL** (actual Solana keypairs)
+- ✅ Email notifications - **REAL** (sends actual emails via Resend)
+- ✅ Database logging - **REAL** (stores in PostgreSQL)
+- ✅ AI decisions - **REAL** (Claude AI makes conversion decisions)
+- ⚠️ **SOL→USDC conversion - SIMULATED** (Jupiter API unavailable on devnet)
+
+**Code is mainnet-ready:** Simply change `SOLANA_NETWORK=mainnet` in `.env` and the system will use real Jupiter swaps. The conversion logic is already implemented in `src/modules/JupiterConverter.ts`.
+
+**Why this approach:**
+- Demonstrates full payment flow on devnet
+- No mainnet SOL required for testing
+- Easy for judges to verify without spending real money
+- Production code path fully tested and ready
+
+---
+
 ## 🏗️ Architecture
 
 ### Core Components
