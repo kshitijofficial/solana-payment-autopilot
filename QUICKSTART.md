@@ -53,7 +53,18 @@ npm run db:migrate
 
 ### 4. Start the Demo
 
-**Option A: Full Demo (Recommended)**
+**Option A: Platform View (Full Demo + Admin Panel)**
+```bash
+npm run start:platform
+```
+This starts:
+- **API Server** → http://localhost:3000
+- **Admin Panel** → http://localhost:3001 (React - view all merchants)
+- **Merchant Dashboard** → http://localhost:5000
+- **Signup Page** → http://localhost:8888
+- **Demo Store** → http://localhost:8080
+
+**Option B: Merchant View (Recommended for Quick Demo)**
 ```bash
 npm run start:all
 ```
@@ -63,7 +74,7 @@ This starts:
 - **Signup Page** → http://localhost:8888
 - **Demo Store** → http://localhost:8080
 
-**Option B: Quick Demo (No Signup)**
+**Option C: Minimal Demo (No Signup)**
 ```bash
 npm run start:demo
 ```
@@ -72,20 +83,23 @@ This starts:
 - **Merchant Dashboard** → http://localhost:5000
 - **Demo Store** → http://localhost:8080
 
-*Note: With Option B, create merchants via API or test scripts*
+*Note: With Option C, create merchants via API or test scripts*
 
-**Option C: Manual Control (Advanced)**
+**Option D: Manual Control (Advanced)**
 ```bash
 # Terminal 1: API Server
 npm run api
 
-# Terminal 2: Merchant Dashboard
+# Terminal 2: Admin Panel (optional - platform operators)
+npm run admin
+
+# Terminal 3: Merchant Dashboard
 cd merchant-dashboard && python -m http.server 5000
 
-# Terminal 3: Signup Page (optional)
+# Terminal 4: Signup Page (optional)
 cd signup && python -m http.server 8888
 
-# Terminal 4: Demo Store
+# Terminal 5: Demo Store
 cd demo && python -m http.server 8080
 ```
 
@@ -156,20 +170,29 @@ npm run test:agent
 
 ## 📊 Key Endpoints
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| **API Server** | http://localhost:3000 | REST API endpoints |
-| **Merchant Login** | http://localhost:5000/login.html | Enter merchant ID |
-| **Merchant Dashboard** | http://localhost:5000 | Main dashboard (auto-redirects from login) |
-| **Demo Store** | http://localhost:8080 | Customer-facing checkout |
-| **Signup Page** | http://localhost:8888 | Merchant onboarding (only with `start:all`) |
-| **Hosted Checkout** | http://localhost:3000/checkout | Payment request checkout pages |
+| Service | URL | Purpose | Available |
+|---------|-----|---------|-----------|
+| **API Server** | http://localhost:3000 | REST API endpoints | All modes |
+| **Admin Panel** 👨‍💼 | http://localhost:3001 | Platform admin (view all merchants) | `start:platform` or `npm run admin` |
+| **Merchant Login** | http://localhost:5000/login.html | Enter merchant ID | All modes |
+| **Merchant Dashboard** | http://localhost:5000 | Individual merchant view | All modes |
+| **Demo Store** | http://localhost:8080 | Customer-facing checkout | All modes |
+| **Signup Page** | http://localhost:8888 | Merchant onboarding | `start:all` or `start:platform` |
+| **Hosted Checkout** | http://localhost:3000/checkout | Payment request pages | All modes |
 
-### 🔄 Navigation Flow:
+### 🔄 Navigation Flows:
+
+**For Merchants:**
 1. **Sign up** → http://localhost:8888 → Get merchant ID
 2. **Log in** → http://localhost:5000/login.html → Enter ID
 3. **Dashboard** → Redirects to http://localhost:5000 (index.html)
 4. **Demo payment** → http://localhost:8080 → Customer checkout
+
+**For Platform Operators:**
+1. **Admin panel** → http://localhost:3001 → View all merchants
+2. **Select merchant** → Switch between accounts
+3. **Monitor transactions** → Real-time updates
+4. **Export data** → CSV accounting reports
 
 ---
 

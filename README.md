@@ -115,7 +115,8 @@ solana-payment-autopilot/
 │   ├── api/                 # REST API server
 │   ├── database/            # Database client + queries
 │   └── utils/               # Helpers, logger, config
-├── merchant-dashboard/       # Merchant UI (React)
+├── dashboard/                # Platform admin UI (React - port 3001)
+├── merchant-dashboard/       # Merchant UI (static HTML - port 5000)
 ├── checkout/                 # Hosted checkout page
 ├── sdk/                      # JavaScript SDK for merchants
 ├── demo/                     # Demo merchant website
@@ -178,16 +179,22 @@ npm run dev       # Start agent + API server
 
 ### 5. Open Services
 
-**Full demo:**
+**Full platform demo (with admin panel):**
+```bash
+npm run start:platform
+```
+
+**Or merchant-only demo:**
 ```bash
 npm run start:all
 ```
 
-Access:
-- Signup: http://localhost:8888
-- Merchant Login: http://localhost:5000/login.html
-- Demo Store: http://localhost:8080
-- API: http://localhost:3000
+**Access:**
+- **Admin Panel** (platform operators): http://localhost:3001
+- **Merchant Signup**: http://localhost:8888
+- **Merchant Login**: http://localhost:5000/login.html
+- **Demo Store**: http://localhost:8080
+- **API**: http://localhost:3000
 
 ---
 
@@ -265,6 +272,14 @@ Access:
 - Get insights on conversions
 - Natural language queries
 - Example: "Why did you convert immediately?"
+
+### ✅ Admin Panel
+- Platform operator dashboard (React)
+- View all registered merchants
+- Switch between merchant accounts
+- Monitor transactions platform-wide
+- CSV export across all merchants
+- Real-time updates
 
 ---
 
