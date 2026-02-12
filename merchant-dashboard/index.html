@@ -703,31 +703,29 @@
 
         async function calculateUsdcAddress(walletAddress) {
             try {
-                // Check if SPL Token library is available
-                if (!window.splToken || !window.splToken.getAssociatedTokenAddress) {
-                    console.warn('SPL Token library not loaded, using API fallback');
-                    // Return null to hide the USDC address section
-                    return null;
-                }
-                
                 // USDC mint addresses
                 const USDC_MINT_DEVNET = 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr';
                 const USDC_MINT_MAINNET = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
                 
                 const usdcMint = SELECTED_NETWORK === 'mainnet' ? USDC_MINT_MAINNET : USDC_MINT_DEVNET;
                 
-                // Calculate Associated Token Address
+                // Calculate Associated Token Address manually
                 const walletPubkey = new solanaWeb3.PublicKey(walletAddress);
                 const mintPubkey = new solanaWeb3.PublicKey(usdcMint);
+                const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+                const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
                 
-                // SPL Token library from CDN exposes as window.splToken
-                const usdcAddress = await window.splToken.getAssociatedTokenAddress(
-                    mintPubkey,
-                    walletPubkey,
-                    false, // allowOwnerOffCurve
-                    window.splToken.TOKEN_PROGRAM_ID
+                // Derive the ATA using findProgramAddressSync
+                const [usdcAddress] = solanaWeb3.PublicKey.findProgramAddressSync(
+                    [
+                        walletPubkey.toBuffer(),
+                        TOKEN_PROGRAM_ID.toBuffer(),
+                        mintPubkey.toBuffer(),
+                    ],
+                    ASSOCIATED_TOKEN_PROGRAM_ID
                 );
                 
+                console.log('✅ USDC address calculated:', usdcAddress.toBase58());
                 return usdcAddress.toBase58();
             } catch (error) {
                 console.error('Failed to calculate USDC address:', error);
