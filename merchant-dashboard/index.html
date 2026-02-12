@@ -703,6 +703,13 @@
 
         async function calculateUsdcAddress(walletAddress) {
             try {
+                // Check if SPL Token library is available
+                if (!window.splToken || !window.splToken.getAssociatedTokenAddress) {
+                    console.warn('SPL Token library not loaded, using API fallback');
+                    // Return null to hide the USDC address section
+                    return null;
+                }
+                
                 // USDC mint addresses
                 const USDC_MINT_DEVNET = 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr';
                 const USDC_MINT_MAINNET = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -713,14 +720,18 @@
                 const walletPubkey = new solanaWeb3.PublicKey(walletAddress);
                 const mintPubkey = new solanaWeb3.PublicKey(usdcMint);
                 
-                const usdcAddress = await splToken.getAssociatedTokenAddress(
+                // SPL Token library from CDN exposes as window.splToken
+                const usdcAddress = await window.splToken.getAssociatedTokenAddress(
                     mintPubkey,
-                    walletPubkey
+                    walletPubkey,
+                    false, // allowOwnerOffCurve
+                    window.splToken.TOKEN_PROGRAM_ID
                 );
                 
                 return usdcAddress.toBase58();
             } catch (error) {
                 console.error('Failed to calculate USDC address:', error);
+                console.error('Error details:', error.message);
                 return null;
             }
         }
@@ -728,12 +739,17 @@
         async function updateUsdcAddressDisplay(walletAddress) {
             const usdcAddress = await calculateUsdcAddress(walletAddress);
             
+            const usdcCard = document.querySelector('.bg-gradient-to-br.from-purple-50'); // USDC card
+            
             if (usdcAddress) {
                 document.getElementById('usdcAddress').textContent = usdcAddress;
                 const cluster = SELECTED_NETWORK === 'mainnet' ? '' : '?cluster=devnet';
                 document.getElementById('usdcSolscanLink').href = `https://solscan.io/account/${usdcAddress}${cluster}`;
+                if (usdcCard) usdcCard.style.display = 'block';
             } else {
-                document.getElementById('usdcAddress').textContent = 'Failed to calculate';
+                // Hide the USDC address card if we can't calculate it
+                if (usdcCard) usdcCard.style.display = 'none';
+                console.log('USDC address calculation not available - card hidden');
             }
         }
 
