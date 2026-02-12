@@ -158,12 +158,59 @@ cd demo && python -m http.server 8080
 solana transfer <MERCHANT_ADDRESS> 0.1 --url devnet
 ```
 
-### Step 5: Watch the Magic ✨
-- Payment appears in dashboard within 15 seconds
-- Agent auto-converts SOL → USDC
-- Email notifications sent (if Resend configured)
-- Transaction logged in database
-- CSV export available
+### Step 5: Watch the AI Agent Work ✨
+
+**Immediate actions:**
+- ✅ Payment detected within 15 seconds
+- 🤖 **AI analyzes** market conditions + merchant profile
+- 💭 **AI decides** whether to convert now or wait
+- 📊 Decision logged with reasoning + confidence score
+
+**If AI chooses "convert now":**
+- ✅ Executes SOL → USDC swap
+- ✅ Sends email confirmations
+- ✅ Updates dashboard in real-time
+
+**If AI chooses "wait":**
+- ⏰ Schedules delayed conversion
+- 💰 Targets better price (e.g., wait 15 min for +2%)
+- 🔔 Alerts merchant of decision
+
+**You can also:**
+- 💬 Chat with AI: "Why did you convert immediately?"
+- 📈 View AI insights: Revenue forecast, patterns, alerts
+- 📊 Export CSV: All transactions + conversion decisions
+
+---
+
+## 🤖 AI Agent Features to Test
+
+Once your demo is running, try these AI agent features:
+
+### 1. Intelligent Conversion Decisions
+- Make a payment → Watch AI decide whether to convert immediately or wait
+- Check "Agent Activity" in dashboard to see AI's reasoning
+- Look for confidence scores and risk assessments
+
+### 2. Chat with the Agent
+- Click chat button (💬) in bottom-right of dashboard
+- Ask: **"Why did you convert immediately?"**
+- Ask: **"How much have I earned this week?"**
+- Try: **"Convert 10 USDC to SOL"** (AI executes the swap!)
+
+### 3. View AI Insights
+- Dashboard shows alerts (large payments, activity spikes)
+- Revenue forecast for next week
+- Pattern detection (repeat customers, peak hours)
+- Price alerts (when SOL crosses thresholds)
+
+### 4. Decision Audit Trail
+- Every AI decision logged with:
+  - ✅ Decision made (convert/wait/monitor)
+  - ✅ Confidence level (0-100%)
+  - ✅ Full reasoning
+  - ✅ Market conditions
+- Export to CSV for analysis
 
 ---
 
