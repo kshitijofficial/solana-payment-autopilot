@@ -52,33 +52,67 @@ npm run db:migrate
 ```
 
 ### 4. Start the Demo
+
+**Option A: Full Demo (Recommended)**
+```bash
+npm run start:all
+```
+This starts:
+- **API Server** → http://localhost:3000
+- **Merchant Dashboard** → http://localhost:5000
+- **Signup Page** → http://localhost:8888
+- **Demo Store** → http://localhost:8080
+
+**Option B: Quick Demo (No Signup)**
 ```bash
 npm run start:demo
 ```
-
 This starts:
 - **API Server** → http://localhost:3000
 - **Merchant Dashboard** → http://localhost:5000
 - **Demo Store** → http://localhost:8080
+
+*Note: With Option B, create merchants via API or test scripts*
+
+**Option C: Manual Control (Advanced)**
+```bash
+# Terminal 1: API Server
+npm run api
+
+# Terminal 2: Merchant Dashboard
+cd merchant-dashboard && python -m http.server 5000
+
+# Terminal 3: Signup Page (optional)
+cd signup && python -m http.server 8888
+
+# Terminal 4: Demo Store
+cd demo && python -m http.server 8080
+```
 
 ---
 
 ## 🎮 Demo Flow
 
 ### Step 1: Create Merchant
-Visit http://localhost:8888 (signup page)
-- Enter business name: "Priya's Coffee Shop"
-- Enter email: `your@email.com`
-- Click "Create Merchant Account"
-- **Save the merchant ID!**
+1. Visit **http://localhost:8888** (signup page)
+2. Enter business name: "Priya's Coffee Shop"
+3. Enter email: `your@email.com`
+4. Click "Create Merchant Account"
+5. **Copy the merchant ID** (you'll need it for login)
 
-### Step 2: View Dashboard
-Visit http://localhost:5000 (merchant dashboard)
-- Paste your merchant ID
-- Click "View Dashboard"
+### Step 2: Log In
+1. Visit **http://localhost:5000/login.html**
+2. Paste your merchant ID
+3. Click "View Dashboard"
+4. Dashboard loads at **http://localhost:5000** (index.html)
+
+### Step 3: Explore Dashboard
 - See your wallet address + QR code
+- View USDC token account
+- Check transaction history (empty initially)
+- Note auto-conversion settings
 
-### Step 3: Make a Payment
+### Step 4: Make a Payment
 **Option A: Use Demo Store**
 1. Visit http://localhost:8080
 2. Click "Buy with Crypto"
@@ -91,7 +125,7 @@ Visit http://localhost:5000 (merchant dashboard)
 solana transfer <MERCHANT_ADDRESS> 0.1 --url devnet
 ```
 
-### Step 4: Watch the Magic ✨
+### Step 5: Watch the Magic ✨
 - Payment appears in dashboard within 15 seconds
 - Agent auto-converts SOL → USDC
 - Email notifications sent (if Resend configured)
@@ -124,11 +158,18 @@ npm run test:agent
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| API Server | http://localhost:3000 | REST API |
-| Merchant Dashboard | http://localhost:5000 | Merchant UI |
-| Demo Store | http://localhost:8080 | Customer checkout |
-| Signup Page | http://localhost:8888 | Merchant onboarding |
-| Hosted Checkout | http://localhost:3000/checkout | Payment page |
+| **API Server** | http://localhost:3000 | REST API endpoints |
+| **Merchant Login** | http://localhost:5000/login.html | Enter merchant ID |
+| **Merchant Dashboard** | http://localhost:5000 | Main dashboard (auto-redirects from login) |
+| **Demo Store** | http://localhost:8080 | Customer-facing checkout |
+| **Signup Page** | http://localhost:8888 | Merchant onboarding (only with `start:all`) |
+| **Hosted Checkout** | http://localhost:3000/checkout | Payment request checkout pages |
+
+### 🔄 Navigation Flow:
+1. **Sign up** → http://localhost:8888 → Get merchant ID
+2. **Log in** → http://localhost:5000/login.html → Enter ID
+3. **Dashboard** → Redirects to http://localhost:5000 (index.html)
+4. **Demo payment** → http://localhost:8080 → Customer checkout
 
 ---
 

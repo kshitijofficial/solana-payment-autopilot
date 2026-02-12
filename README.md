@@ -176,30 +176,38 @@ node scripts/run-migrations.js
 npm run dev       # Start agent + API server
 ```
 
-### 5. Open Merchant Dashboard
+### 5. Open Services
+
+**Full demo:**
+```bash
+npm run start:all
 ```
-http://localhost:3000/merchant-dashboard
-```
+
+Access:
+- Signup: http://localhost:8888
+- Merchant Login: http://localhost:5000/login.html
+- Demo Store: http://localhost:8080
+- API: http://localhost:3000
 
 ---
 
 ## 🎮 Demo Flow
 
 ### As a Merchant:
-1. Sign up at `/signup`
-2. View your dashboard
-3. Copy your payment QR code
-4. Share with customers
-5. Watch payments arrive in real-time
-6. Agent auto-converts SOL → USDC
-7. Export CSV for accounting
+1. **Sign up** → http://localhost:8888 → Get merchant ID
+2. **Log in** → http://localhost:5000/login.html → Enter ID
+3. **View dashboard** → See wallet address + QR code
+4. **Share QR** → Give to customers
+5. **Watch payments** → Real-time updates in dashboard
+6. **Auto-conversion** → Agent converts SOL → USDC
+7. **Export CSV** → Download for accounting
 
 ### As a Customer:
-1. Visit demo store: `/demo`
-2. Click "Buy with Crypto"
-3. Scan QR code or copy address
-4. Send SOL from any wallet
-5. Get instant confirmation email
+1. **Visit store** → http://localhost:8080
+2. **Click "Buy with Crypto"** → See payment page
+3. **Scan QR** or copy wallet address
+4. **Send SOL** from any wallet (devnet)
+5. **Get confirmation** → Email receipt (if Resend configured)
 
 ---
 
