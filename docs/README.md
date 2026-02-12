@@ -6,6 +6,8 @@ Additional documentation for developers, merchants, and hackathon judges.
 
 ## 📖 Documentation Index
 
+**Note:** This folder contains both current documentation and historical development logs from the 5-day hackathon sprint. Files prefixed with "DAY" are development logs kept for transparency.
+
 ### 🏗️ Architecture & Design
 | Document | Description |
 |----------|-------------|

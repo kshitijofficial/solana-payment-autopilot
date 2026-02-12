@@ -1,170 +1,391 @@
-# Setup Guide - Windows
+# Setup Guide 🚀
 
-## Prerequisites
-
-1. **Node.js** (v18 or higher)
-2. **Git**
-3. **Your Supabase credentials** (from dashboard)
+Complete installation and configuration guide for Solana Payment Autopilot.
 
 ---
 
-## Step 1: Get Your Supabase Anon Key
+## 📋 Prerequisites
 
-1. Go to: https://supabase.com/dashboard/project/unghlsaqdxmjhfpyurkl
-2. Click **Settings** (gear icon, bottom left)
-3. Click **API**
-4. Copy the **`anon` `public`** key (long JWT token)
+- **Node.js** v18 or higher
+- **npm** or **yarn**
+- **Git**
+- **Solana CLI** (optional, for local testing)
+
+### API Keys Required
+
+You'll need accounts with these services:
+
+| Service | Purpose | Free Tier | Sign Up |
+|---------|---------|-----------|---------|
+| **Helius** | Solana RPC + WebSocket | 1M requests/month | https://helius.dev |
+| **Supabase** | PostgreSQL database | Free forever | https://supabase.com |
+| **Resend** | Email notifications | 3,000 emails/month | https://resend.com |
+| **Anthropic** | AI agent (optional) | $5 credit | https://anthropic.com |
 
 ---
 
-## Step 2: Update `.env` File
+## 🚀 Installation
 
-Open `.env` in your project root and update:
+### 1. Clone Repository
+```bash
+git clone https://github.com/kshitijofficial/solana-payment-autopilot.git
+cd solana-payment-autopilot
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Configure Environment
+
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your credentials:
 
 ```env
-SUPABASE_URL=https://unghlsaqdxmjhfpyurkl.supabase.co
-SUPABASE_PUBLISHABLE_KEY=<paste your anon key here>
+# Solana Configuration
+SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=YOUR_HELIUS_KEY
+SOLANA_NETWORK=devnet
+HELIUS_API_KEY=your_helius_api_key_here
+
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
+
+# Email Notifications (Resend)
+RESEND_API_KEY=your_resend_api_key_here
+RESEND_FROM_EMAIL=onboarding@yourdomain.com
+
+# AI Agent (Optional - for merchant chat)
+ANTHROPIC_API_KEY=your_claude_api_key_here
+
+# Jupiter Aggregator (Optional - defaults provided)
+JUPITER_API_URL=https://quote-api.jup.ag/v6
 ```
 
-**Important:** Use the REAL anon key from your Supabase dashboard, not a placeholder!
+### 4. Set Up Database
 
----
-
-## Step 3: Install Dependencies
-
+Run migrations to create tables:
 ```bash
-npm install
-cd dashboard
-npm install
-cd ..
+npm run db:migrate
 ```
 
----
-
-## Step 4: Start Everything
-
-Open 2 terminals:
-
-### Terminal 1: API Server (with auto payment monitor)
+**Verify connection:**
 ```bash
-npm run api
+npm run db:check
 ```
 
 You should see:
 ```
-✅ API server running on http://localhost:3000
-✅ Payment monitor started (polling every 15s)
-Monitoring X merchant wallets
-```
-
-### Terminal 2: Dashboard
-```bash
-npm run dashboard
-```
-
-Opens at: http://localhost:5173
-
----
-
-## Step 5: Create Your First Merchant
-
-1. Open dashboard: http://localhost:5173
-2. Click **Create Merchant Account**
-3. Enter:
-   - Business Name: Your shop name
-   - Email: Your email
-4. Click **Create**
-5. Save the wallet address shown
-
----
-
-## Step 6: Test Payment Flow
-
-1. **Get Devnet SOL**: Visit https://faucet.solana.com
-2. **Send to your wallet**: Use Phantom wallet (switch to devnet)
-3. **Wait 15-30 seconds**: Payment monitor polls every 15s
-4. **Check dashboard**: Transaction appears automatically!
-
----
-
-## What Changed (Latest Update)
-
-### ✅ Payment Monitor Auto-Starts
-- No need to manually run payment monitor
-- Starts automatically when you run `npm run api`
-- Monitors all merchant wallets
-- Polls every 15 seconds
-
-### ✅ Beautiful New Dashboard
-- Modern gradient UI
-- Real-time stats (merchants, transactions, volume)
-- Better merchant selector
-- Improved QR code generator
-- Live transaction table with status badges
-- Auto-refresh every 10 seconds
-- Mobile-friendly responsive design
-
-### ✅ Manual Transaction Processor
-If a payment doesn't show up, run:
-```bash
-npx tsx manual-process-tx.ts
-```
-
-This will detect and save any missing transactions.
-
----
-
-## Troubleshooting
-
-### "Invalid API key" Error
-- Check `.env` has the correct `SUPABASE_PUBLISHABLE_KEY`
-- Get it from: Supabase Dashboard → Settings → API → anon public key
-
-### Dashboard Shows "Loading..." Forever
-- Make sure API server is running on port 3000
-- Check `http://localhost:3000/api/health` returns `{"status":"ok"}`
-
-### Transaction Not Showing
-- Wait 15-30 seconds (polling interval)
-- Check wallet address is correct
-- Verify transaction on Solscan: https://solscan.io/?cluster=devnet
-- Run manual processor: `npx tsx manual-process-tx.ts`
-
-### Port 3000 Already in Use
-```bash
-# Windows
-netstat -ano | findstr :3000
-taskkill /PID <pid> /F
+✅ Connected to Supabase
+✅ Tables: merchants, transactions, conversions, payment_requests, agent_decisions
 ```
 
 ---
 
-## Quick Commands
+## 🎮 Running the Application
+
+### Quick Start (Recommended)
+
+**Full platform with admin panel:**
+```bash
+npm run start:platform
+```
+
+**Or merchant-only demo:**
+```bash
+npm run start:all
+```
+
+**Access the services:**
+- Admin Panel: http://localhost:3001
+- Merchant Signup: http://localhost:8888
+- Merchant Login: http://localhost:5000/login.html
+- Demo Store: http://localhost:8080
+- API: http://localhost:3000
+
+### Individual Services
+
+Run services separately for development:
 
 ```bash
-# Start API + Monitor
+# Terminal 1: API Server
 npm run api
 
-# Start Dashboard
-npm run dashboard
+# Terminal 2: Admin Panel (optional)
+npm run admin
 
-# Manual transaction processor
-npx tsx manual-process-tx.ts
+# Terminal 3: Merchant Dashboard
+cd merchant-dashboard && python -m http.server 5000
 
-# Run all tests
-npx tsx day1-complete-test.ts
+# Terminal 4: Signup Page
+cd signup && python -m http.server 8888
+
+# Terminal 5: Demo Store
+cd demo && python -m http.server 8080
 ```
 
 ---
 
-## What's Next (Day 2)
+## ✅ Verification
 
-Tomorrow we'll add:
-- Jupiter SOL→USDC auto-conversion
-- Email notifications via Resend
-- Conversion status tracking
-- Error handling + retries
+### 1. API Health Check
+```bash
+curl http://localhost:3000/health
+```
+
+Expected: `{"status":"ok","timestamp":"..."}`
+
+### 2. Database Connection
+```bash
+npm run db:check
+```
+
+Expected: List of tables with row counts
+
+### 3. Create Test Merchant
+
+Visit http://localhost:8888 (signup page):
+1. Enter business name: "Test Shop"
+2. Enter email: test@example.com
+3. Click "Create Merchant Account"
+4. Save the merchant ID shown
+
+### 4. Test Payment Flow
+
+**Using Solana CLI (devnet):**
+```bash
+solana config set --url devnet
+solana airdrop 1
+solana transfer <MERCHANT_WALLET_ADDRESS> 0.1
+```
+
+**Or use Phantom wallet:**
+1. Switch to devnet
+2. Airdrop SOL from https://faucet.solana.com
+3. Send to merchant wallet address
+
+**Check dashboard:**
+- Visit http://localhost:5000/login.html
+- Enter your merchant ID
+- Transaction should appear within 15-30 seconds
 
 ---
 
-**Need help?** Check the logs in the terminal where you ran `npm run api`.
+## 🔧 Configuration Options
+
+### Network Selection
+
+**For devnet (demo):**
+```env
+SOLANA_NETWORK=devnet
+SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=YOUR_KEY
+```
+
+**For mainnet (production):**
+```env
+SOLANA_NETWORK=mainnet
+SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
+```
+
+### Payment Monitoring
+
+**Polling interval** (default: 15 seconds)
+Edit `src/modules/PaymentMonitor.ts`:
+```typescript
+private pollingInterval = 15000; // milliseconds
+```
+
+### Conversion Settings
+
+**Auto-conversion enabled by default** for new merchants.
+
+To change default behavior, edit `database/migrations/001_create_merchants.sql`:
+```sql
+auto_convert_enabled BOOLEAN DEFAULT true
+```
+
+### Email Templates
+
+Customize email templates in:
+- `src/services/EmailService.ts`
+- HTML templates with merchant branding
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm test
+```
+
+### Integration Tests
+```bash
+npm run test:integration
+```
+
+### Agent Tests
+```bash
+npm run test:agent
+```
+
+### Database Tests
+```bash
+npm run test:db
+```
+
+### End-to-End Test
+```bash
+npx tsx scripts/test-integration.ts
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### API Server Won't Start
+
+**Check port availability:**
+```bash
+# Linux/Mac
+lsof -i :3000
+
+# Windows
+netstat -ano | findstr :3000
+```
+
+**Kill existing process:**
+```bash
+# Linux/Mac
+kill -9 <PID>
+
+# Windows
+taskkill /PID <PID> /F
+```
+
+### Database Connection Failed
+
+1. Verify credentials in `.env`
+2. Check Supabase project is active
+3. Confirm database tables exist:
+   ```bash
+   npm run db:check
+   ```
+4. Re-run migrations if needed:
+   ```bash
+   npm run db:migrate
+   ```
+
+### Payments Not Detected
+
+1. **Verify network**: Ensure using devnet
+2. **Check RPC**: Test Helius endpoint
+3. **Confirm wallet address**: Verify in Supabase `merchants` table
+4. **Wait 15-30 seconds**: Polling interval
+5. **Check logs**: `tail -f logs/combined.log`
+6. **Manual trigger**: 
+   ```bash
+   npx tsx scripts/manual-process-tx.ts
+   ```
+
+### Email Notifications Not Sending
+
+1. **Verify Resend API key** in `.env`
+2. **Check email address verified** in Resend dashboard
+3. **Review free tier limits** (3,000/month)
+4. **Check logs** for error messages
+
+### Admin Dashboard Shows No Merchants
+
+1. Create merchant via signup: http://localhost:8888
+2. Verify in database:
+   ```bash
+   npx tsx scripts/check-database.ts
+   ```
+3. Refresh admin panel: http://localhost:3001
+
+---
+
+## 📦 Production Deployment
+
+### Environment Variables
+
+Set all `.env` variables in your hosting platform.
+
+### Database
+
+Supabase production instance (or self-hosted PostgreSQL).
+
+### API Server
+
+Deploy to:
+- Railway
+- Render
+- AWS EC2
+- DigitalOcean
+- Heroku
+
+### Static Files
+
+Deploy merchant dashboard, signup, demo to:
+- Vercel
+- Netlify
+- CloudFlare Pages
+- AWS S3 + CloudFront
+
+### Admin Panel (React)
+
+Build and deploy:
+```bash
+cd dashboard
+npm run build
+# Deploy dist/ folder to Vercel/Netlify
+```
+
+### Mainnet Checklist
+
+- [ ] Update `SOLANA_NETWORK=mainnet`
+- [ ] Update RPC URL to mainnet Helius endpoint
+- [ ] Fund platform wallet with SOL for fees
+- [ ] Test with small amounts first
+- [ ] Monitor error logs closely
+- [ ] Set up alerts (Sentry, LogRocket)
+
+---
+
+## 🔐 Security Best Practices
+
+1. **Never commit `.env` to git**
+2. **Use environment variables** for all secrets
+3. **Enable rate limiting** on API endpoints
+4. **Validate all inputs** (XSS, SQL injection)
+5. **Use HTTPS** in production
+6. **Secure webhook signatures** (HMAC verification)
+7. **Rotate API keys** regularly
+8. **Monitor suspicious activity** (large payments, rapid transactions)
+
+---
+
+## 📚 Additional Resources
+
+- **Main README**: [README.md](./README.md)
+- **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **Quick Start**: [QUICKSTART.md](./QUICKSTART.md)
+- **All Docs**: [docs/](./docs/)
+
+---
+
+## 🆘 Need Help?
+
+- **Issues**: https://github.com/kshitijofficial/solana-payment-autopilot/issues
+- **Telegram**: [@KshitijWeb3](https://t.me/KshitijWeb3)
+- **Logs**: Check `logs/combined.log` and `logs/error.log`
+
+---
+
+**Ready to accept crypto payments! 🎉**

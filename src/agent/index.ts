@@ -1,3 +1,17 @@
+/**
+ * ⚠️ REFERENCE IMPLEMENTATION
+ * 
+ * This file contains an early architecture design for the autonomous agent.
+ * The actual production implementation uses:
+ * - src/api/server-v2.ts (main API server)
+ * - src/services/AgenticConversionService.ts (AI conversion decisions)
+ * - src/services/MerchantChatAgent.ts (conversational interface)
+ * - src/services/AgentInsightsService.ts (alerts & forecasting)
+ * 
+ * This file is kept for reference and demonstrates the initial design pattern.
+ * To run the production system, use: npm run api or npm run start:all
+ */
+
 import dotenv from 'dotenv';
 import { WalletManager } from '../modules/WalletManager';
 import { PaymentMonitor, PaymentEvent } from '../modules/PaymentMonitor';
