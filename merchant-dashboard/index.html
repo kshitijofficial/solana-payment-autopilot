@@ -115,19 +115,71 @@
             <h2 class="text-xl font-bold text-white mb-4">🤖 Agent Intelligence</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <p class="text-xs text-purple-100 mb-1">Total Decisions</p>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-xs text-purple-100">Total Decisions</p>
+                        <div class="relative group">
+                            <div class="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center cursor-help">
+                                <span class="text-[10px] text-white font-bold">i</span>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                <div class="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                                    Number of AI conversion decisions made
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <p class="text-2xl font-bold text-white" id="agentTotalDecisions">-</p>
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <p class="text-xs text-purple-100 mb-1">Avg Confidence</p>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-xs text-purple-100">Avg Confidence</p>
+                        <div class="relative group">
+                            <div class="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center cursor-help">
+                                <span class="text-[10px] text-white font-bold">i</span>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                <div class="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                                    AI's average confidence level (0-100%)
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <p class="text-2xl font-bold text-white" id="agentAvgConfidence">-</p>
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <p class="text-xs text-purple-100 mb-1">Immediate</p>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-xs text-purple-100">Immediate</p>
+                        <div class="relative group">
+                            <div class="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center cursor-help">
+                                <span class="text-[10px] text-white font-bold">i</span>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                <div class="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                                    Payments converted immediately to USDC
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <p class="text-2xl font-bold text-white" id="agentConvertNow">-</p>
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <p class="text-xs text-purple-100 mb-1">Optimized</p>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-xs text-purple-100">Optimized</p>
+                        <div class="relative group">
+                            <div class="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center cursor-help">
+                                <span class="text-[10px] text-white font-bold">i</span>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                <div class="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                                    Payments held for better conversion rates
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <p class="text-2xl font-bold text-white" id="agentWaitCount">-</p>
                 </div>
             </div>
