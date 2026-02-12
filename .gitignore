@@ -54,3 +54,11 @@ secrets/
 # Generated QR codes
 qr-codes/
 merchant-wallet.json
+
+# Email artifacts
+resend/
+
+# Script outputs
+scripts/*.json
+scripts/*.csv
+scripts/output/
