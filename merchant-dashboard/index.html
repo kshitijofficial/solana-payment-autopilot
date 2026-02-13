@@ -11,6 +11,43 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
         }
+        
+        /* Typing indicator animation */
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .typing-dots .dot {
+            font-size: 8px;
+            color: #6b7280;
+            animation: typing 1.4s infinite;
+            opacity: 0.4;
+        }
+        
+        .typing-dots .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dots .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.4;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -846,6 +883,10 @@
 
             const sendBtn = document.getElementById('chatSendBtn');
             sendBtn.disabled = true;
+            input.disabled = true;
+
+            // Add typing indicator
+            const typingId = addTypingIndicator();
 
             try {
                 const res = await fetch(`${API_BASE}/agent/chat`, {
@@ -854,15 +895,48 @@
                     body: JSON.stringify({ merchant_id: MERCHANT_ID, message })
                 });
                 const data = await res.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+                
                 if (data.success) {
                     addChatMessage(data.data.reply, 'agent');
                 } else {
                     addChatMessage('Sorry, error occurred.', 'agent');
                 }
             } catch (error) {
+                removeTypingIndicator(typingId);
                 addChatMessage('Connection error.', 'agent');
             } finally {
                 sendBtn.disabled = false;
+                input.disabled = false;
+            }
+        }
+
+        function addTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            const uniqueId = 'typing-' + Date.now();
+            div.id = uniqueId;
+            div.className = 'text-left';
+            div.innerHTML = `
+                <div class="inline-block max-w-xs p-3 rounded-lg bg-gray-100 text-gray-900">
+                    <span class="typing-dots">
+                        <span class="dot">●</span>
+                        <span class="dot">●</span>
+                        <span class="dot">●</span>
+                    </span>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return uniqueId;
+        }
+
+        function removeTypingIndicator(typingId) {
+            const element = document.getElementById(typingId);
+            if (element) {
+                element.remove();
             }
         }
 

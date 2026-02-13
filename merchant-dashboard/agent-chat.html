@@ -251,6 +251,43 @@
         height: 500px;
       }
     }
+
+    /* Typing indicator animation */
+    .typing-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .typing-dots .dot {
+      font-size: 8px;
+      color: #6b7280;
+      animation: typing 1.4s infinite;
+      opacity: 0.4;
+    }
+    
+    .typing-dots .dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+    
+    .typing-dots .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dots .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+      0%, 60%, 100% {
+        opacity: 0.4;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(-8px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -381,7 +418,11 @@
       // Disable input
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.disabled = true;
+      input.disabled = true;
       sendBtn.textContent = 'Thinking...';
+
+      // Add typing indicator
+      const typingId = addTypingIndicator();
 
       try {
         const res = await fetch(`${API_URL}/agent/chat`, {
@@ -394,6 +435,9 @@
         });
 
         const data = await res.json();
+        
+        // Remove typing indicator
+        removeTypingIndicator(typingId);
 
         if (data.success) {
           addMessage(data.data.reply, 'agent');
@@ -402,10 +446,44 @@
         }
       } catch (error) {
         console.error('Chat failed:', error);
+        removeTypingIndicator(typingId);
         addMessage('Sorry, I could not connect. Please try again.', 'agent');
       } finally {
         sendBtn.disabled = false;
+        input.disabled = false;
         sendBtn.textContent = 'Send';
+      }
+    }
+
+    function addTypingIndicator() {
+      const container = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      const uniqueId = 'typing-' + Date.now();
+      div.id = uniqueId;
+      div.className = 'mb-4 flex items-start';
+      div.innerHTML = `
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            🤖
+          </div>
+          <div class="bg-gray-100 rounded-lg px-4 py-3 max-w-md">
+            <span class="typing-dots">
+              <span class="dot">●</span>
+              <span class="dot">●</span>
+              <span class="dot">●</span>
+            </span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      return uniqueId;
+    }
+
+    function removeTypingIndicator(typingId) {
+      const element = document.getElementById(typingId);
+      if (element) {
+        element.remove();
       }
     }
 
