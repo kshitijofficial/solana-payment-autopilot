@@ -53,6 +53,19 @@ An **autonomous AI agent** (powered by Claude) that handles everything:
 
 ---
 
+## 🎥 Demo Video
+
+**Watch the full demo:** [YouTube](https://youtube.com/watch?v=VEecYJxFfzU)
+
+See the platform in action:
+- Merchant onboarding & wallet creation
+- Real-time payment detection
+- AI-powered conversion decisions
+- Chat interface & insights dashboard
+- Hosted checkout & SDK integration
+
+---
+
 ## 🤖 AI Agent Features
 
 The autonomous AI agent (powered by Claude) makes intelligent decisions and provides insights:
