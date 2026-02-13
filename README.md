@@ -482,6 +482,7 @@ Currently runs on **devnet** (demo). Ready for mainnet with:
 
 - [Architecture Deep Dive](./ARCHITECTURE.md)
 - [Setup Guide](./SETUP_GUIDE.md)
+- [Database Setup](./DATABASE_SETUP.md) - Step-by-step Supabase setup
 - [All Documentation](./docs/)
 
 ---

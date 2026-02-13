@@ -69,10 +69,18 @@ JUPITER_API_URL=https://quote-api.jup.ag/v6
 
 ### 4. Set Up Database
 
-Run migrations to create tables:
-```bash
-npm run db:migrate
-```
+**See detailed guide:** [DATABASE_SETUP.md](./DATABASE_SETUP.md)
+
+**Quick setup (in Supabase SQL Editor):**
+1. Go to https://supabase.com → Open your project
+2. Click **"SQL Editor"** → **"+ New query"**
+3. Copy-paste the ENTIRE contents of `database/COMPLETE_SETUP.sql`
+4. Click **"RUN"**
+
+This creates all 8 tables:
+- `merchants`, `transactions`, `conversions`, `wallets`
+- `notifications`, `payment_requests`
+- `agent_decisions`, `agent_learnings`
 
 **Verify connection:**
 ```bash
