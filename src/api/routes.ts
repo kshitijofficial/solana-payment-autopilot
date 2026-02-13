@@ -685,6 +685,45 @@ router.get('/accounting/monthly/:merchantId/:year/:month', async (req: Request, 
   }
 });
 
+// Update merchant risk profile
+router.patch('/merchants/:merchantId/risk-profile', async (req: Request, res: Response) => {
+  try {
+    const { merchantId } = req.params;
+    const { risk_profile } = req.body;
+
+    // Validate risk profile
+    if (!['conservative', 'moderate', 'aggressive'].includes(risk_profile)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid risk profile. Must be: conservative, moderate, or aggressive' 
+      });
+    }
+
+    // Update in database
+    const { data, error } = await db.supabase
+      .from('merchants')
+      .update({ risk_profile })
+      .eq('id', merchantId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    logger.info(`Merchant ${merchantId} risk profile updated to: ${risk_profile}`);
+    res.json({ 
+      success: true, 
+      data: { 
+        merchant_id: merchantId, 
+        risk_profile,
+        message: `Risk profile updated to ${risk_profile}` 
+      } 
+    });
+  } catch (error) {
+    logger.error('Failed to update risk profile', error);
+    res.status(500).json({ success: false, error: 'Failed to update risk profile' });
+  }
+});
+
 export default router;
 // Add to routes.ts - Demo mode endpoints
 
