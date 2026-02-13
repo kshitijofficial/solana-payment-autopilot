@@ -20,7 +20,7 @@ You'll need accounts with these services:
 | **Helius** | Solana RPC + WebSocket | 1M requests/month | https://helius.dev |
 | **Supabase** | PostgreSQL database | Free forever | https://supabase.com |
 | **Resend** | Email notifications | 3,000 emails/month | https://resend.com |
-| **Anthropic** | AI agent (optional) | $5 credit | https://anthropic.com |
+| **Anthropic** | AI agent (required for agentic features) | $5 credit | https://anthropic.com |
 
 ---
 
@@ -60,7 +60,7 @@ SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
 RESEND_API_KEY=your_resend_api_key_here
 RESEND_FROM_EMAIL=onboarding@yourdomain.com
 
-# AI Agent (Optional - for merchant chat)
+# AI Agent (Required for agentic conversion, chat, insights)
 ANTHROPIC_API_KEY=your_claude_api_key_here
 
 # Jupiter Aggregator (Optional - defaults provided)
@@ -229,10 +229,25 @@ npm test
 npm run test:integration
 ```
 
-### Agent Tests
+### Agent Tests (AI Features)
 ```bash
 npm run test:agent
 ```
+
+**What it tests:**
+- ✅ Agentic conversion decisions (market analysis, risk profiles)
+- ✅ Merchant chat interface (questions, swap commands)
+- ✅ Agent insights (forecasting, alerts, patterns)
+- ✅ Decision audit trail logging
+
+**To test AI chat manually:**
+1. Visit merchant dashboard: http://localhost:5000
+2. Click "Chat with Agent" in bottom-right
+3. Try commands:
+   - "Why did you convert immediately?"
+   - "Convert 10 USDC to SOL"
+   - "Show me my revenue forecast"
+4. Check decision trail in admin panel: http://localhost:3001
 
 ### Database Tests
 ```bash

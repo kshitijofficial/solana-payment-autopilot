@@ -20,14 +20,19 @@
 │                    AUTONOMOUS AGENT CORE                    │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Wallet     │  │   Payment    │  │  Conversion  │     │
-│  │   Manager    │  │   Monitor    │  │   Engine     │     │
+│  │   Wallet     │  │   Payment    │  │   Agentic    │     │
+│  │   Manager    │  │   Monitor    │  │  Converter   │     │
 │  └──────────────┘  └──────────────┘  └──────────────┘     │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  Accounting  │  │ Notification │  │   E-commerce │     │
-│  │   Module     │  │   Service    │  │  Integration │     │
+│  │   Merchant   │  │   Agent      │  │  Notification│     │
+│  │ Chat Agent   │  │   Insights   │  │   Service    │     │
 │  └──────────────┘  └──────────────┘  └──────────────┘     │
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐                       │
+│  │  Accounting  │  │   E-commerce │                       │
+│  │   Module     │  │  Integration │                       │
+│  └──────────────┘  └──────────────┘                       │
 └─────────────────────────────────────────────────────────────┘
            │                  │                  │
            ▼                  ▼                  ▼
@@ -81,7 +86,97 @@ Confirm → Trigger conversion → Update status
 
 ---
 
-### 3. Conversion Engine
+### 3. Agentic Converter (AI-Powered)
+**Responsibility**: Make intelligent conversion decisions using Claude AI
+
+**Features**:
+- **Market analysis** - 24h price trends, volatility assessment
+- **Risk profiling** - Conservative/Moderate/Aggressive merchant preferences
+- **Context-aware decisions** - Transaction size, timing, market conditions
+- **Decision audit trail** - Full transparency with confidence scores
+- **Natural language explanations** - "Converted now due to high volatility"
+
+**Decision factors**:
+```typescript
+interface ConversionContext {
+  merchantRiskProfile: 'conservative' | 'moderate' | 'aggressive';
+  transactionSizeUSD: number;
+  currentPrice: number;
+  priceChange24h: number;
+  volatility: number;
+  timeSincePayment: number;
+}
+```
+
+**Typical outcomes**:
+- ✅ **Convert Now** (85% of cases) - Immediate swap for safety
+- ⏰ **Wait** (10%) - Hold for better rate (15min-1h max)
+- 👁️ **Monitor** (5%) - Watch market and re-evaluate
+
+**Storage**:
+```
+agent_decisions table:
+  - id (uuid)
+  - merchant_id
+  - transaction_id
+  - decision_type (convert_now|wait|monitor)
+  - reasoning (AI explanation)
+  - factors (JSON context)
+  - confidence_score (0-1)
+  - executed_at
+```
+
+---
+
+### 4. Merchant Chat Agent
+**Responsibility**: Conversational AI interface for merchants
+
+**Capabilities**:
+- Answer questions about transactions, conversions, earnings
+- Execute on-demand swaps ("Convert 10 USDC to SOL")
+- Explain AI decisions and strategies
+- Provide business insights and forecasts
+- Revenue projections, pattern detection, recommendations
+
+**Swap execution**:
+```typescript
+// Natural language → structured command
+"Convert 10 USDC to SOL" → {
+  action: 'swap',
+  fromToken: 'USDC',
+  toToken: 'SOL',
+  amount: 10
+}
+
+// Agent executes via Jupiter
+const result = await jupiterSwap(USDC_MINT, SOL_MINT, 10);
+return `✅ Converted 10 USDC → ${result.solAmount} SOL`;
+```
+
+---
+
+### 5. Agent Insights Service
+**Responsibility**: Proactive monitoring and analytics
+
+**Features**:
+- **Large payment detection** - Alert on unusual transaction sizes
+- **Activity spike monitoring** - Detect 3x normal volume
+- **Revenue forecasting** - Predict next week's earnings
+- **Pattern recognition** - Identify repeat customers, peak hours
+- **Price movement alerts** - Notify on 15%+ SOL price changes
+- **Smart recommendations** - "Consider aggressive profile during uptrends"
+
+**Forecasting algorithm**:
+```typescript
+// Simple moving average + trend analysis
+const avgDaily = sum(last7Days) / 7;
+const trend = (last3Days - prev3Days) / prev3Days;
+const forecast = avgDaily * 7 * (1 + trend);
+```
+
+---
+
+### 6. Conversion Engine (Legacy/Basic)
 **Responsibility**: Swap incoming tokens to USDC
 
 **⚠️ Devnet Limitation:**
@@ -118,7 +213,7 @@ async convertToUSDC(inputToken: string, amount: number) {
 
 ---
 
-### 4. Accounting Module
+### 7. Accounting Module
 **Responsibility**: Generate merchant-friendly reports
 
 **Exports**:
@@ -143,7 +238,7 @@ transactions table:
 
 ---
 
-### 5. Notification Service
+### 8. Notification Service
 **Responsibility**: Alert merchants of new payments
 
 **Channels**:
@@ -162,7 +257,7 @@ Body:
 
 ---
 
-### 6. E-commerce Integration
+### 9. E-commerce Integration
 **Responsibility**: Connect to Shopify/WooCommerce
 
 **Shopify Webhook**:
@@ -366,17 +461,17 @@ async swap(amountSol: number, isDevnet: boolean = true): Promise<SwapResult> {
 ## Current Implementation Status
 
 **✅ Completed (Hackathon MVP):**
-- Wallet manager + payment monitor
-- Real-time payment detection (Helius WebSocket)
-- AI-powered conversion decisions (Claude)
+- Wallet manager + payment monitor (real-time via Helius)
+- **Agentic Converter** - AI-powered conversion decisions (Claude)
+- **Merchant Chat Agent** - Conversational AI + on-demand swaps
+- **Agent Insights** - Proactive alerts, forecasting, pattern detection
+- **Decision audit trail** - Full transparency on AI reasoning
 - Jupiter integration (devnet simulated, mainnet ready)
-- Email notifications (Resend)
-- Payment requests + webhooks
-- Merchant dashboard + admin panel
-- Conversational AI chat
-- Proactive alerts + insights
-- Decision audit trail
-- Accounting exports (CSV)
+- Email notifications (Resend) - merchant + customer confirmations
+- Payment requests + webhooks (HMAC-secured)
+- Merchant dashboard + admin panel (React)
+- Accounting exports (CSV for QuickBooks)
+- Hosted checkout page + JavaScript SDK
 
 **🚀 Ready for Production:**
 - Change `SOLANA_NETWORK=mainnet` in `.env`
